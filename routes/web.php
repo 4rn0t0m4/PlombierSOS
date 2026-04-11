@@ -14,6 +14,15 @@ use App\Http\Controllers\VilleAutocompleteController;
 use App\Http\Controllers\VilleController;
 use Illuminate\Support\Facades\Route;
 
+// Deploy helper (to remove after first deploy)
+Route::get('/deploy-migrate/{token}', function (string $token) {
+    if ($token !== 'psos-2026-setup') {
+        abort(404);
+    }
+    Artisan::call('migrate', ['--force' => true]);
+    return '<pre>' . Artisan::output() . '</pre>';
+});
+
 // Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
