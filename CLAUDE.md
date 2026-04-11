@@ -49,10 +49,10 @@ php artisan test
 ### Types de plombier
 
 ```
-0 = Plombier         → /plombier/{slug}.html
-1 = Chauffagiste     → /chauffagiste/{slug}.html
-2 = Plombier-Chauffagiste → /plombier-chauffagiste/{slug}.html
-3 = Dépanneur urgence → /depanneur-urgence/{slug}.html
+0 = Plombier         → /plombier/{slug}
+1 = Chauffagiste     → /chauffagiste/{slug}
+2 = Plombier-Chauffagiste → /plombier-chauffagiste/{slug}
+3 = Dépanneur urgence → /depanneur-urgence/{slug}
 ```
 
 ### Models
@@ -87,6 +87,6 @@ php artisan test
 ## Conventions
 
 - Texte UI en **français**, code/DB en **anglais**
-- URLs SEO avec suffixe `.html`
+- URLs propres sans extension (ex: `/plombier/mon-slug`, `/departement/ain`, `/ville/lyon`)
 - Thème : bleu-900 (header), rouge-600 (urgence/CTA)
 - Composants : `<x-plombier-card>`, `<x-star-rating>`, `<x-phone-reveal>`, `<x-statut-ouverture>`

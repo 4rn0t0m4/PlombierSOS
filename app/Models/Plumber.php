@@ -63,7 +63,7 @@ class Plumber extends Model
 
     public function getUrlAttribute(): string
     {
-        return '/'.$this->type_slug.'/'.$this->slug.'.html';
+        return '/'.$this->type_slug.'/'.$this->slug;
     }
 
     public function getOpeningStatusAttribute(): string

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\DepartementController;
@@ -13,6 +12,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UrgenceController;
 use App\Http\Controllers\VilleAutocompleteController;
 use App\Http\Controllers\VilleController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 // Deploy helpers (to remove after setup)
@@ -22,6 +22,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     }
     if ($action === 'import-villes') {
         DB::unprepared(file_get_contents(database_path('seeders/data.sql')));
+
         return '<pre>Départements et villes importés.</pre>';
     }
     match ($action) {
@@ -29,31 +30,32 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'import-plombiers' => Artisan::call('import:google-places', ['--limit' => 20]),
         default => abort(404),
     };
-    return '<pre>' . Artisan::output() . '</pre>';
+
+    return '<pre>'.Artisan::output().'</pre>';
 });
 
 // Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Plombier detail pages
-Route::get('/plombier/{slug}.html', [PlombierController::class, 'show'])->defaults('type', 0)->name('plombier.show');
-Route::get('/chauffagiste/{slug}.html', [PlombierController::class, 'show'])->defaults('type', 1)->name('chauffagiste.show');
-Route::get('/plombier-chauffagiste/{slug}.html', [PlombierController::class, 'show'])->defaults('type', 2)->name('plombier-chauffagiste.show');
-Route::get('/depanneur-urgence/{slug}.html', [PlombierController::class, 'show'])->defaults('type', 3)->name('depanneur-urgence.show');
+Route::get('/plombier/{slug}', [PlombierController::class, 'show'])->defaults('type', 0)->name('plombier.show');
+Route::get('/chauffagiste/{slug}', [PlombierController::class, 'show'])->defaults('type', 1)->name('chauffagiste.show');
+Route::get('/plombier-chauffagiste/{slug}', [PlombierController::class, 'show'])->defaults('type', 2)->name('plombier-chauffagiste.show');
+Route::get('/depanneur-urgence/{slug}', [PlombierController::class, 'show'])->defaults('type', 3)->name('depanneur-urgence.show');
 
 // Department & city pages
-Route::get('/departement-{slug}.html', [DepartementController::class, 'show'])->name('departement.show');
-Route::get('/plombier-a-{slug}.html', [VilleController::class, 'show'])->name('ville.show');
+Route::get('/departement/{slug}', [DepartementController::class, 'show'])->name('departement.show');
+Route::get('/ville/{slug}', [VilleController::class, 'show'])->name('ville.show');
 
 // Search
-Route::get('/recherche.html', [RechercheController::class, 'index'])->name('recherche');
+Route::get('/recherche', [RechercheController::class, 'index'])->name('recherche');
 
 // Urgence
 Route::get('/urgence', [UrgenceController::class, 'index'])->name('urgence');
 
 // Demande d'intervention
-Route::get('/demande-intervention', [DemandeController::class, 'create'])->name('demande.create');
-Route::post('/demande-intervention', [DemandeController::class, 'store'])->middleware('throttle:5,1')->name('demande.store');
+Route::get('/demande', [DemandeController::class, 'create'])->name('demande.create');
+Route::post('/demande', [DemandeController::class, 'store'])->middleware('throttle:5,1')->name('demande.store');
 
 // Autocomplete
 Route::get('/ajax/villes', VilleAutocompleteController::class)->name('villes.autocomplete');
