@@ -28,6 +28,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     match ($action) {
         'migrate' => Artisan::call('migrate', ['--force' => true]),
         'import-plombiers' => Artisan::call('import:google-places', ['--limit' => 20]),
+        'import-reviews' => Artisan::call('import:google-reviews', ['--limit' => 50]),
         default => abort(404),
     };
 

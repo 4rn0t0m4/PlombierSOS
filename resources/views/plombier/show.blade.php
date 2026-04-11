@@ -111,9 +111,42 @@
                     </div>
                 @endif
 
-                {{-- Avis --}}
+                {{-- Avis Google --}}
+                @if($plumber->google_reviews)
+                    <div class="mt-8">
+                        <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                            Avis Google
+                            <span class="text-sm font-normal text-gray-500">({{ $plumber->google_reviews_count }})</span>
+                        </h2>
+                        @foreach($plumber->google_reviews as $gReview)
+                            <div class="bg-white border rounded-lg p-4 mb-4">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2">
+                                        @if($gReview['photo'] ?? null)
+                                            <img src="{{ $gReview['photo'] }}" alt="" class="w-8 h-8 rounded-full">
+                                        @endif
+                                        <span class="font-semibold">{{ $gReview['author'] }}</span>
+                                        @if($gReview['date'] ?? null)
+                                            <span class="text-sm text-gray-400">{{ \Carbon\Carbon::parse($gReview['date'])->format('d/m/Y') }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <x-star-rating :rating="$gReview['rating']" size="w-4 h-4" />
+                                        <span class="text-sm font-semibold">{{ $gReview['rating'] }}/5</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mt-2">{{ $gReview['text'] }}</p>
+                            </div>
+                        @endforeach
+                        @if($plumber->google_maps_url)
+                            <a href="{{ $plumber->google_maps_url }}" target="_blank" class="text-sm text-blue-600 hover:underline">Voir tous les avis sur Google →</a>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Avis du site --}}
                 <div class="mt-8">
-                    <h2 class="text-xl font-semibold mb-3">Avis ({{ $plumber->approvedReviews->count() }})</h2>
+                    <h2 class="text-xl font-semibold mb-3">Avis clients ({{ $plumber->approvedReviews->count() }})</h2>
 
                     @foreach($plumber->approvedReviews as $review)
                         <div class="bg-white border rounded-lg p-4 mb-4">

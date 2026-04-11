@@ -30,7 +30,7 @@ class Plumber extends Model
         'address', 'postal_code', 'city', 'department', 'city_id', 'latitude', 'longitude',
         'service_radius', 'description', 'opening_hours', 'pricing', 'siret', 'photo',
         'emergency_24h', 'free_quote', 'rge_certified', 'specialties',
-        'average_rating', 'reviews_count', 'google_rating', 'google_reviews_count',
+        'average_rating', 'reviews_count', 'google_rating', 'google_reviews_count', 'google_reviews',
         'is_active', 'city_ranking',
     ];
 
@@ -43,6 +43,7 @@ class Plumber extends Model
             'free_quote' => 'boolean',
             'rge_certified' => 'boolean',
             'specialties' => 'array',
+            'google_reviews' => 'array',
             'average_rating' => 'decimal:1',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',

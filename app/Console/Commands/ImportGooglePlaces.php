@@ -21,7 +21,7 @@ class ImportGooglePlaces extends Command
 
     private string $apiKey;
 
-    private const FIELD_MASK = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.regularOpeningHours,places.rating,places.userRatingCount,places.types,places.location,places.editorialSummary,places.businessStatus,places.addressComponents';
+    private const FIELD_MASK = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.regularOpeningHours,places.rating,places.userRatingCount,places.reviews,places.types,places.location,places.editorialSummary,places.businessStatus,places.addressComponents';
 
     private const SEARCH_QUERIES = [
         'plombier',
@@ -274,6 +274,7 @@ class ImportGooglePlaces extends Command
             'reviews_count' => 0,
             'google_rating' => $place['rating'] ?? null,
             'google_reviews_count' => $place['userRatingCount'] ?? 0,
+            'google_reviews' => $this->formatGoogleReviews($place['reviews'] ?? []),
             'city_ranking' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -319,6 +320,23 @@ class ImportGooglePlaces extends Command
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    private function formatGoogleReviews(array $reviews): ?string
+    {
+        if (empty($reviews)) {
+            return null;
+        }
+
+        $formatted = collect($reviews)->map(fn ($r) => [
+            'author' => $r['authorAttribution']['displayName'] ?? 'Anonyme',
+            'rating' => $r['rating'] ?? 0,
+            'text' => $r['text']['text'] ?? '',
+            'date' => $r['publishTime'] ?? null,
+            'photo' => $r['authorAttribution']['photoUri'] ?? null,
+        ])->filter(fn ($r) => ! empty($r['text']))->values()->all();
+
+        return ! empty($formatted) ? json_encode($formatted, JSON_UNESCAPED_UNICODE) : null;
     }
 
     private function extractComponent(array $place, string $type): string
