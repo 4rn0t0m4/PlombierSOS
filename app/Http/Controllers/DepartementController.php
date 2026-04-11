@@ -9,9 +9,9 @@ class DepartementController extends Controller
     public function show(string $slug)
     {
         $department = Department::where('slug', $slug)->firstOrFail();
-        $cities = $department->villes()
-            ->withCount(['plombiers' => fn ($q) => $q->where('is_active', true)])
-            ->having('plombiers_count', '>', 0)
+        $cities = $department->cities()
+            ->withCount(['plumbers' => fn ($q) => $q->where('is_active', true)])
+            ->having('plumbers_count', '>', 0)
             ->orderBy('name')
             ->get();
 
