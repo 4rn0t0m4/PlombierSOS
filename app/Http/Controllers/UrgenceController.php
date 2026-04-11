@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plombier;
-use App\Models\Ville;
+use App\Models\City;
+use App\Models\Plumber;
 use Illuminate\Http\Request;
 
 class UrgenceController extends Controller
 {
     public function index(Request $request)
     {
-        $villeNom = $request->input('ville');
+        $cityName = $request->input('ville');
         $plombiers = collect();
 
-        if ($villeNom) {
-            $ville = Ville::where('nom_ville', 'like', $villeNom)->first();
-            if ($ville && $ville->latitude && $ville->longitude) {
-                $plombiers = Plombier::valide()
-                    ->where('urgence_24h', true)
-                    ->nearby($ville->latitude, $ville->longitude, 50)
-                    ->with('horairesRelation')
+        if ($cityName) {
+            $city = City::where('name', 'like', $cityName)->first();
+            if ($city && $city->latitude && $city->longitude) {
+                $plombiers = Plumber::active()
+                    ->where('emergency_24h', true)
+                    ->nearby($city->latitude, $city->longitude, 50)
+                    ->with('schedules')
                     ->limit(20)
                     ->get();
             }
         }
 
-        return view('urgence.index', compact('plombiers', 'villeNom'));
+        return view('urgence.index', compact('plombiers', 'cityName'));
     }
 }

@@ -2,44 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plombier;
-use App\Models\Ville;
+use App\Models\City;
+use App\Models\Plumber;
 use Illuminate\Http\Request;
 
 class RechercheController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Plombier::valide()->with('horairesRelation');
+        $query = Plumber::active()->with('schedules');
 
         $nom = $request->input('nom');
-        $villeNom = $request->input('ville');
+        $cityName = $request->input('ville');
         $urgence = $request->boolean('urgence');
         $type = $request->input('type');
 
         if ($nom) {
-            $query->where('titre', 'like', '%' . $nom . '%');
+            $query->where('title', 'like', '%'.$nom.'%');
         }
 
-        if ($villeNom) {
-            $ville = Ville::where('nom_ville', 'like', $villeNom)->first();
-            if ($ville && $ville->latitude && $ville->longitude) {
-                $query->nearby($ville->latitude, $ville->longitude, 30);
-            } elseif ($ville) {
-                $query->where('ville_id', $ville->id);
+        if ($cityName) {
+            $city = City::where('name', 'like', $cityName)->first();
+            if ($city && $city->latitude && $city->longitude) {
+                $query->nearby($city->latitude, $city->longitude, 30);
+            } elseif ($city) {
+                $query->where('city_id', $city->id);
             }
         }
 
         if ($urgence) {
-            $query->where('urgence_24h', true);
+            $query->where('emergency_24h', true);
         }
 
         if ($type !== null && $type !== '') {
             $query->where('type', (int) $type);
         }
 
-        $plombiers = $query->orderByDesc('moyenne')->paginate(20);
+        $plombiers = $query->orderByDesc('average_rating')->paginate(20);
 
-        return view('recherche.index', compact('plombiers', 'nom', 'villeNom', 'urgence', 'type'));
+        return view('recherche.index', compact('plombiers', 'nom', 'cityName', 'urgence', 'type'));
     }
 }

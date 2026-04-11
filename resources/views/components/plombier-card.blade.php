@@ -7,22 +7,22 @@
                 <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold text-sm">{{ $rank }}</span>
             @endif
             <div>
-                <a href="{{ $plombier->url }}" class="text-lg font-semibold text-gray-900 hover:text-blue-600">{{ $plombier->titre }}</a>
+                <a href="{{ $plombier->url }}" class="text-lg font-semibold text-gray-900 hover:text-blue-600">{{ $plombier->title }}</a>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="text-sm text-gray-500">{{ $plombier->type_label }}</span>
                     <x-statut-ouverture :plombier="$plombier" />
                 </div>
-                @if($plombier->ville)
-                    <p class="text-sm text-gray-500">{{ $plombier->adresse }} {{ $plombier->cp }} {{ $plombier->ville }}</p>
+                @if($plombier->city)
+                    <p class="text-sm text-gray-500">{{ $plombier->address }} {{ $plombier->postal_code }} {{ $plombier->city }}</p>
                 @endif
                 <div class="flex gap-1.5 mt-1.5">
-                    @if($plombier->urgence_24h)
+                    @if($plombier->emergency_24h)
                         <span class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Urgence 24h</span>
                     @endif
-                    @if($plombier->devis_gratuit)
+                    @if($plombier->free_quote)
                         <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Devis gratuit</span>
                     @endif
-                    @if($plombier->agree_rge)
+                    @if($plombier->rge_certified)
                         <span class="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">RGE</span>
                     @endif
                 </div>
@@ -34,7 +34,7 @@
                     <x-star-rating :rating="$plombier->google_rating" size="w-4 h-4" />
                     <span class="text-sm text-gray-500">{{ number_format($plombier->google_rating, 1, ',', '') }}</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">{{ $plombier->google_nb_avis }} avis</p>
+                <p class="text-xs text-gray-400 mt-1">{{ $plombier->google_reviews_count }} avis</p>
             @endif
         </div>
     </div>

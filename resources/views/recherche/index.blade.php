@@ -8,7 +8,7 @@
                     <label class="block text-sm font-medium mb-1">Nom</label>
                     <input type="text" name="nom" value="{{ $nom ?? '' }}" class="w-full border rounded-lg px-3 py-2" placeholder="Plombier...">
                 </div>
-                <div x-data="villeAutocomplete()" @click.outside="open = false" x-init="query = '{{ $villeNom ?? '' }}'">
+                <div x-data="villeAutocomplete()" @click.outside="open = false" x-init="query = '{{ $cityName ?? '' }}'">
                     <label class="block text-sm font-medium mb-1">Ville</label>
                     <div class="relative">
                         <input type="text" name="ville" x-model="query" @input="search()" @focus="open = results.length > 0" autocomplete="off" class="w-full border rounded-lg px-3 py-2" placeholder="Ville...">

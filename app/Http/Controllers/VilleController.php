@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plombier;
-use App\Models\Ville;
+use App\Models\City;
+use App\Models\Plumber;
 
 class VilleController extends Controller
 {
     public function show(string $slug)
     {
-        $ville = Ville::where('url', $slug)->firstOrFail();
+        $city = City::where('slug', $slug)->firstOrFail();
 
-        $query = Plombier::valide()->where('ville_id', $ville->id)
-            ->orderByRaw('classement_ville = 0 ASC, classement_ville ASC, moyenne DESC');
+        $query = Plumber::active()->where('city_id', $city->id)
+            ->orderByRaw('city_ranking = 0 ASC, city_ranking ASC, average_rating DESC');
 
-        if ($query->count() === 0 && $ville->latitude && $ville->longitude) {
-            $query = Plombier::valide()->nearby($ville->latitude, $ville->longitude, 20);
+        if ($query->count() === 0 && $city->latitude && $city->longitude) {
+            $query = Plumber::active()->nearby($city->latitude, $city->longitude, 20);
         }
 
-        $plombiers = $query->with('horairesRelation')->paginate(20);
+        $plombiers = $query->with('schedules')->paginate(20);
 
-        return view('ville.show', compact('ville', 'plombiers'));
+        return view('ville.show', compact('city', 'plombiers'));
     }
 }

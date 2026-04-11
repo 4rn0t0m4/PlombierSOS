@@ -19,10 +19,10 @@ class ImportVilles extends Command
         $depts = DB::connection('mysql')->select("SELECT * FROM $source.departements");
 
         foreach ($depts as $dept) {
-            DB::table('departements')->insertOrIgnore([
-                'numero' => $dept->numero,
-                'departement' => $dept->departement,
-                'departement_url' => $dept->departement_url,
+            DB::table('departments')->insertOrIgnore([
+                'number' => $dept->numero,
+                'name' => $dept->departement,
+                'slug' => $dept->departement_url,
                 'region' => $dept->region,
                 'article' => $dept->article,
                 'latitude' => $dept->gmap_latitude ?? null,
@@ -32,7 +32,7 @@ class ImportVilles extends Command
             ]);
         }
 
-        $this->info(count($depts) . ' départements importés.');
+        $this->info(count($depts).' départements importés.');
 
         $this->info('Import des villes...');
         $total = DB::connection('mysql')->selectOne("SELECT COUNT(*) as c FROM $source.villes")->c;
@@ -48,11 +48,11 @@ class ImportVilles extends Command
             foreach ($villes as $v) {
                 $rows[] = [
                     'id' => $v->id,
-                    'nom_ville' => $v->nom_ville,
-                    'code_postal' => $v->code_postal,
-                    'url' => $v->url,
-                    'departement' => $v->departement,
-                    'habitants' => $v->habitants,
+                    'name' => $v->nom_ville,
+                    'postal_code' => $v->code_postal,
+                    'slug' => $v->url,
+                    'department' => $v->departement,
+                    'population' => $v->habitants,
                     'latitude' => $v->latitude,
                     'longitude' => $v->longitude,
                     'created_at' => now(),
@@ -61,7 +61,7 @@ class ImportVilles extends Command
                 $bar->advance();
             }
 
-            DB::table('villes')->insert($rows);
+            DB::table('cities')->insert($rows);
             $offset += $batch;
         }
 

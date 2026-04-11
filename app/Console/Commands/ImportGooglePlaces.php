@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Departement;
-use App\Models\Plombier;
-use App\Models\Ville;
+use App\Models\City;
+use App\Models\Department;
+use App\Models\Plumber;
 use App\Services\SlugService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -43,23 +43,23 @@ class ImportGooglePlaces extends Command
         $dryRun = $this->option('dry-run');
         $imported = 0;
 
-        $dept = $this->getNextDepartement();
+        $dept = $this->getNextDepartment();
         if (! $dept) {
             $this->info('Tous les départements traités. Reset.');
             DB::table('google_import_progress')->update(['completed' => false]);
-            $dept = $this->getNextDepartement();
+            $dept = $this->getNextDepartment();
         }
 
-        $this->info("Département : {$dept->numero} - {$dept->departement}");
+        $this->info("Département : {$dept->number} - {$dept->name}");
 
-        $villes = Ville::where('departement', $dept->numero)
-            ->orderByDesc('habitants')
+        $cities = City::where('department', $dept->number)
+            ->orderByDesc('population')
             ->limit(5)
-            ->pluck('nom_ville')
+            ->pluck('name')
             ->toArray();
 
-        if (empty($villes)) {
-            $villes = [$dept->departement];
+        if (empty($cities)) {
+            $cities = [$dept->name];
         }
 
         foreach (self::SEARCH_QUERIES as $searchType) {
@@ -67,12 +67,12 @@ class ImportGooglePlaces extends Command
                 break;
             }
 
-            foreach ($villes as $ville) {
+            foreach ($cities as $city) {
                 if ($imported >= $limit) {
                     break;
                 }
 
-                $query = "$searchType $ville";
+                $query = "$searchType $city";
                 $this->line("  Recherche : $query");
 
                 $places = $this->searchPlaces($query);
@@ -94,10 +94,10 @@ class ImportGooglePlaces extends Command
                     $nom = $place['displayName']['text'] ?? '';
                     $cp = $this->extractComponent($place, 'postal_code');
 
-                    if (Plombier::where('titre', $nom)->where('cp', $cp)->exists()) {
+                    if (Plumber::where('title', $nom)->where('postal_code', $cp)->exists()) {
                         DB::table('google_imports')->insertOrIgnore([
                             'place_id' => $placeId,
-                            'statut' => 'doublon',
+                            'status' => 'duplicate',
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
@@ -106,33 +106,33 @@ class ImportGooglePlaces extends Command
                     }
 
                     if ($dryRun) {
-                        $villeNom = $this->extractComponent($place, 'locality');
-                        $this->info("    [DRY-RUN] $nom - $villeNom ($cp)");
+                        $cityName = $this->extractComponent($place, 'locality');
+                        $this->info("    [DRY-RUN] $nom - $cityName ($cp)");
                         $imported++;
 
                         continue;
                     }
 
-                    $plombierId = $this->createPlombier($place);
+                    $plumberId = $this->createPlumber($place);
 
-                    if ($plombierId) {
+                    if ($plumberId) {
                         DB::table('google_imports')->insertOrIgnore([
                             'place_id' => $placeId,
-                            'plombier_id' => $plombierId,
-                            'statut' => 'importe',
+                            'plumber_id' => $plumberId,
+                            'status' => 'imported',
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
                         $imported++;
-                        $villeNom = $this->extractComponent($place, 'locality');
-                        $this->info("    IMPORTÉ : $nom - $villeNom ($cp)");
+                        $cityName = $this->extractComponent($place, 'locality');
+                        $this->info("    IMPORTÉ : $nom - $cityName ($cp)");
                     }
                 }
             }
         }
 
         DB::table('google_import_progress')->updateOrInsert(
-            ['departement' => $dept->numero],
+            ['department' => $dept->number],
             [
                 'completed' => true,
                 'total_imported' => DB::raw("total_imported + $imported"),
@@ -141,23 +141,23 @@ class ImportGooglePlaces extends Command
             ]
         );
 
-        $this->info("$imported plombier(s) importé(s) dans le {$dept->numero} - {$dept->departement}.");
+        $this->info("$imported plombier(s) importé(s) dans le {$dept->number} - {$dept->name}.");
 
         return self::SUCCESS;
     }
 
-    private function getNextDepartement(): ?Departement
+    private function getNextDepartment(): ?Department
     {
         if ($this->option('departement')) {
-            return Departement::where('numero', $this->option('departement'))->first();
+            return Department::where('number', $this->option('departement'))->first();
         }
 
         $processed = DB::table('google_import_progress')
             ->where('completed', true)
-            ->pluck('departement');
+            ->pluck('department');
 
-        return Departement::whereNotIn('numero', $processed)
-            ->orderBy('numero')
+        return Department::whereNotIn('number', $processed)
+            ->orderBy('number')
             ->first();
     }
 
@@ -173,7 +173,7 @@ class ImportGooglePlaces extends Command
         ]);
 
         if (! $response->ok()) {
-            $this->warn('    API Error: ' . $response->json('error.message', 'Inconnue'));
+            $this->warn('    API Error: '.$response->json('error.message', 'Inconnue'));
 
             return [];
         }
@@ -183,7 +183,7 @@ class ImportGooglePlaces extends Command
         return $response->json('places', []);
     }
 
-    private function createPlombier(array $place): ?int
+    private function createPlumber(array $place): ?int
     {
         $nom = $place['displayName']['text'] ?? '';
         $location = $place['location'] ?? [];
@@ -202,40 +202,40 @@ class ImportGooglePlaces extends Command
         }
 
         // Détecter urgence 24h
-        $urgence24h = false;
+        $emergency24h = false;
         if (str_contains($nomLower, '24h') || str_contains($nomLower, '24/24') || str_contains($nomLower, 'urgence')) {
-            $urgence24h = true;
+            $emergency24h = true;
         }
         if (! empty($hours['periods'])) {
             $jours = collect($hours['periods'])->pluck('open.day')->unique()->count();
             if ($jours >= 7) {
-                $urgence24h = true;
+                $emergency24h = true;
             }
         }
 
         $cp = $this->extractComponent($place, 'postal_code');
-        $villeNom = $this->extractComponent($place, 'locality');
+        $cityName = $this->extractComponent($place, 'locality');
         $rue = $this->extractComponent($place, 'route');
         $numero = $this->extractComponent($place, 'street_number');
 
-        $adresse = trim(($numero ? "$numero " : '') . $rue);
+        $address = trim(($numero ? "$numero " : '').$rue);
 
-        $ville = null;
+        $city = null;
         if ($cp) {
-            $ville = Ville::where('code_postal', $cp)
-                ->orderByRaw("CASE WHEN nom_ville LIKE ? THEN 0 ELSE 1 END", [$villeNom . '%'])
+            $city = City::where('postal_code', $cp)
+                ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', [$cityName.'%'])
                 ->first();
         }
 
-        $deptNum = $ville?->departement;
+        $deptNum = $city?->department;
         if (! $deptNum && $cp && strlen($cp) >= 2) {
             $deptNum = substr($cp, 0, 2);
         }
 
-        $slug = SlugService::generate($nom . ' ' . $villeNom . ' ' . $cp);
+        $slug = SlugService::generate($nom.' '.$cityName.' '.$cp);
         $baseSlug = $slug;
         $i = 1;
-        while (Plombier::where('slug', $slug)->exists()) {
+        while (Plumber::where('slug', $slug)->exists()) {
             $slug = "$baseSlug-$i";
             $i++;
         }
@@ -243,50 +243,50 @@ class ImportGooglePlaces extends Command
         $telephone = $place['nationalPhoneNumber'] ?? '';
         $telephone = substr(preg_replace('/[^0-9+]/', '', $telephone), 0, 20);
 
-        $horairesText = '';
+        $openingHoursText = '';
         if (! empty($hours['weekdayDescriptions'])) {
-            $horairesText = implode("\n", $hours['weekdayDescriptions']);
+            $openingHoursText = implode("\n", $hours['weekdayDescriptions']);
         }
 
-        $plombierId = DB::table('plombiers')->insertGetId([
+        $plumberId = DB::table('plumbers')->insertGetId([
             'type' => $type,
-            'titre' => $nom,
+            'title' => $nom,
             'slug' => $slug,
             'place_id' => $place['id'],
             'email' => null,
-            'telephone' => $telephone ?: null,
-            'site_web' => $place['websiteUri'] ?? null,
+            'phone' => $telephone ?: null,
+            'website' => $place['websiteUri'] ?? null,
             'google_maps_url' => $place['googleMapsUri'] ?? null,
-            'adresse' => $adresse ?: null,
-            'cp' => $cp ?: null,
-            'ville' => $villeNom ?: null,
-            'dept' => $deptNum ?: null,
-            'ville_id' => $ville?->id,
+            'address' => $address ?: null,
+            'postal_code' => $cp ?: null,
+            'city' => $cityName ?: null,
+            'department' => $deptNum ?: null,
+            'city_id' => $city?->id,
             'latitude' => $location['latitude'] ?? null,
             'longitude' => $location['longitude'] ?? null,
-            'rayon_intervention' => 20,
+            'service_radius' => 20,
             'description' => $place['editorialSummary']['text'] ?? null,
-            'horaires' => $horairesText ?: null,
-            'urgence_24h' => $urgence24h,
-            'devis_gratuit' => str_contains($nomLower, 'devis gratuit'),
-            'valide' => true,
-            'moyenne' => 0,
-            'nb_avis' => 0,
+            'opening_hours' => $openingHoursText ?: null,
+            'emergency_24h' => $emergency24h,
+            'free_quote' => str_contains($nomLower, 'devis gratuit'),
+            'is_active' => true,
+            'average_rating' => 0,
+            'reviews_count' => 0,
             'google_rating' => $place['rating'] ?? null,
-            'google_nb_avis' => $place['userRatingCount'] ?? 0,
-            'classement_ville' => 0,
+            'google_reviews_count' => $place['userRatingCount'] ?? 0,
+            'city_ranking' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         if (! empty($hours['periods'])) {
-            $this->importHoraires($plombierId, $hours['periods']);
+            $this->importOpeningHours($plumberId, $hours['periods']);
         }
 
-        return $plombierId;
+        return $plumberId;
     }
 
-    private function importHoraires(int $plombierId, array $periods): void
+    private function importOpeningHours(int $plumberId, array $periods): void
     {
         $grouped = [];
         foreach ($periods as $period) {
@@ -294,27 +294,27 @@ class ImportGooglePlaces extends Command
             if ($day === null) {
                 continue;
             }
-            $jour = $day === 0 ? 7 : $day;
-            $grouped[$jour][] = $period;
+            $dayOfWeek = $day === 0 ? 7 : $day;
+            $grouped[$dayOfWeek][] = $period;
         }
 
         $format = fn ($p, $key) => str_pad($p[$key]['hour'] ?? 0, 2, '0', STR_PAD_LEFT)
-            . ':' . str_pad($p[$key]['minute'] ?? 0, 2, '0', STR_PAD_LEFT) . ':00';
+            .':'.str_pad($p[$key]['minute'] ?? 0, 2, '0', STR_PAD_LEFT).':00';
 
-        foreach ($grouped as $jour => $dayPeriods) {
+        foreach ($grouped as $dayOfWeek => $dayPeriods) {
             usort($dayPeriods, fn ($a, $b) => ($a['open']['hour'] ?? 0) - ($b['open']['hour'] ?? 0));
 
             $first = $dayPeriods[0];
             $second = $dayPeriods[1] ?? null;
 
-            DB::table('horaires')->insertOrIgnore([
-                'plombier_id' => $plombierId,
-                'jour' => $jour,
-                'matin_ouverture' => $format($first, 'open'),
-                'matin_fermeture' => $format($first, 'close'),
-                'aprem_ouverture' => $second ? $format($second, 'open') : null,
-                'aprem_fermeture' => $second ? $format($second, 'close') : null,
-                'ferme' => false,
+            DB::table('opening_hours')->insertOrIgnore([
+                'plumber_id' => $plumberId,
+                'day_of_week' => $dayOfWeek,
+                'morning_open' => $format($first, 'open'),
+                'morning_close' => $format($first, 'close'),
+                'afternoon_open' => $second ? $format($second, 'open') : null,
+                'afternoon_close' => $second ? $format($second, 'close') : null,
+                'is_closed' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

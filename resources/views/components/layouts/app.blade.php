@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Plombier SOS - Trouvez un plombier en urgence' }}</title>
     <meta name="description" content="{{ $description ?? 'Trouvez un plombier, chauffagiste ou dépanneur près de chez vous. Urgence 24h/24, devis gratuit, avis clients.' }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('departements', function (Blueprint $table) {
-            $table->string('numero', 3)->primary();
-            $table->string('departement');
-            $table->string('departement_url');
+        Schema::create('departments', function (Blueprint $table) {
+            $table->string('number', 3)->primary();
+            $table->string('name');
+            $table->string('slug');
             $table->string('region');
             $table->string('article')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('departements');
+        Schema::dropIfExists('departments');
     }
 };

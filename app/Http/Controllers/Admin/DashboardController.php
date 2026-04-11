@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Avis;
-use App\Models\Demande;
-use App\Models\Plombier;
+use App\Models\Plumber;
+use App\Models\Review;
+use App\Models\ServiceRequest;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $stats = [
-            'plombiers' => Plombier::count(),
-            'plombiers_valides' => Plombier::where('valide', true)->count(),
-            'avis_en_attente' => Avis::where('valide', false)->where('refus', false)->count(),
-            'demandes_nouvelles' => Demande::where('statut', 'nouvelle')->count(),
+            'plombiers' => Plumber::count(),
+            'plombiers_valides' => Plumber::where('is_active', true)->count(),
+            'avis_en_attente' => Review::where('is_approved', false)->where('is_rejected', false)->count(),
+            'demandes_nouvelles' => ServiceRequest::where('status', 'new')->count(),
         ];
 
         return view('admin.dashboard', compact('stats'));

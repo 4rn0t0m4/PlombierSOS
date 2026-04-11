@@ -2,26 +2,26 @@
 
 namespace App\Services;
 
-use App\Models\Plombier;
+use App\Models\Plumber;
 
 class RatingService
 {
-    public function recalculate(Plombier $plombier): void
+    public function recalculate(Plumber $plumber): void
     {
-        $avis = $plombier->approvedAvis;
+        $reviews = $plumber->approvedReviews;
 
-        if ($avis->isEmpty()) {
-            $plombier->update(['moyenne' => 0, 'nb_avis' => 0]);
+        if ($reviews->isEmpty()) {
+            $plumber->update(['average_rating' => 0, 'reviews_count' => 0]);
 
             return;
         }
 
-        $total = $avis->sum(fn ($a) => $a->moyenne);
-        $moyenne = round($total / $avis->count(), 1);
+        $total = $reviews->sum(fn ($review) => $review->average_rating);
+        $avg = round($total / $reviews->count(), 1);
 
-        $plombier->update([
-            'moyenne' => $moyenne,
-            'nb_avis' => $avis->count(),
+        $plumber->update([
+            'average_rating' => $avg,
+            'reviews_count' => $reviews->count(),
         ]);
     }
 }

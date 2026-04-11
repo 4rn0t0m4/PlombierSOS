@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('villes', function (Blueprint $table) {
+        Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->string('nom_ville');
-            $table->string('code_postal', 5)->index();
-            $table->string('url')->unique();
-            $table->string('departement', 3);
-            $table->foreign('departement')->references('numero')->on('departements');
-            $table->unsignedInteger('habitants')->default(0);
+            $table->string('name');
+            $table->string('postal_code', 5)->index();
+            $table->string('slug')->unique();
+            $table->string('department', 3);
+            $table->foreign('department')->references('number')->on('departments');
+            $table->unsignedInteger('population')->default(0);
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();
@@ -24,6 +24,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('villes');
+        Schema::dropIfExists('cities');
     }
 };

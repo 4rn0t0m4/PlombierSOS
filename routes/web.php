@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PlombierController;
 use App\Http\Controllers\RechercheController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UrgenceController;
 use App\Http\Controllers\VilleAutocompleteController;
 use App\Http\Controllers\VilleController;
@@ -45,6 +46,9 @@ Route::post('/ajax/phone', [PhoneController::class, 'reveal'])->name('phone.reve
 // Reviews
 Route::post('/avis', [AvisController::class, 'store'])->middleware('throttle:5,1')->name('avis.store');
 Route::get('/avis/confirmer/{token}', [AvisController::class, 'confirmerEmail'])->name('avis.confirmer');
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Static pages
 Route::view('/mentions-legales', 'pages.mentions-legales')->name('mentions-legales');

@@ -1,17 +1,17 @@
-<x-layouts.app :title="'Plombier ' . $departement->article . $departement->departement . ' - Plombier SOS'">
+<x-layouts.app :title="'Plombier ' . $department->article . $department->name . ' - Plombier SOS'">
     <div class="max-w-7xl mx-auto px-4 py-8">
         <nav class="text-sm text-gray-500 mb-6">
             <a href="{{ route('home') }}" class="hover:text-blue-600">Accueil</a>
             <span class="mx-1">/</span>
-            <span class="text-gray-900">{{ $departement->departement }}</span>
+            <span class="text-gray-900">{{ $department->name }}</span>
         </nav>
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Plombier {{ $departement->article }}{{ $departement->departement }}</h1>
-        @if($villes->isNotEmpty())
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Plombier {{ $department->article }}{{ $department->name }}</h1>
+        @if($cities->isNotEmpty())
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                @foreach($villes as $ville)
-                    <a href="{{ route('ville.show', $ville->url) }}" class="bg-white border rounded-lg px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition">
-                        <span class="font-medium text-gray-900">{{ $ville->nom_ville }}</span>
-                        <span class="text-sm text-gray-400 ml-1">({{ $ville->plombiers_count }})</span>
+                @foreach($cities as $city)
+                    <a href="{{ route('ville.show', $city->url) }}" class="bg-white border rounded-lg px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition">
+                        <span class="font-medium text-gray-900">{{ $city->name }}</span>
+                        <span class="text-sm text-gray-400 ml-1">({{ $city->plombiers_count }})</span>
                     </a>
                 @endforeach
             </div>

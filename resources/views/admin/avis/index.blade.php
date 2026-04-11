@@ -9,9 +9,9 @@
             <div class="bg-white rounded-lg shadow-sm border p-4 mb-4">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="font-semibold">{{ $a->titre }}</p>
-                        <p class="text-sm text-gray-500">par {{ $a->user?->pseudo ?? $a->pseudo_auteur ?? 'Anonyme' }} — {{ $a->plombier->titre }}</p>
-                        <p class="text-sm text-gray-700 mt-1">{{ Str::limit($a->contenu, 200) }}</p>
+                        <p class="font-semibold">{{ $a->title }}</p>
+                        <p class="text-sm text-gray-500">par {{ $a->user?->username ?? $a->author_username ?? 'Anonyme' }} — {{ $a->plumber->title }}</p>
+                        <p class="text-sm text-gray-700 mt-1">{{ Str::limit($a->content, 200) }}</p>
                     </div>
                     <div class="flex gap-2">
                         <form action="{{ route('admin.avis.moderer', $a) }}" method="POST">@csrf<input type="hidden" name="action" value="valider"><button class="bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700">Valider</button></form>

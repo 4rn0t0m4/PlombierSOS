@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Demande;
-use App\Models\Plombier;
-use App\Models\Ville;
+use App\Models\Plumber;
+use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -12,8 +11,8 @@ class DemandeController extends Controller
 {
     public function create(Request $request)
     {
-        $plombier = $request->has('plombier_id')
-            ? Plombier::find($request->input('plombier_id'))
+        $plombier = $request->has('plumber_id')
+            ? Plumber::find($request->input('plumber_id'))
             : null;
 
         return view('demande.create', compact('plombier'));
@@ -22,32 +21,32 @@ class DemandeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'plombier_id' => 'nullable|exists:plombiers,id',
-            'nom' => 'required|string|max:255',
+            'plumber_id' => 'nullable|exists:plumbers,id',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'telephone' => 'required|string|max:20',
-            'cp' => 'required|string|max:5',
-            'ville' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:20',
+            'postal_code' => 'required|string|max:5',
+            'city' => 'nullable|string|max:255',
             'description' => 'required|string|max:5000',
-            'urgence' => 'required|in:normale,urgente,tres_urgente',
-            'type' => 'required|in:depannage,installation,entretien,devis',
+            'urgency' => 'required|in:normal,urgent,very_urgent',
+            'type' => 'required|in:repair,installation,maintenance,quote',
         ]);
 
-        $demande = Demande::create($validated);
+        $serviceRequest = ServiceRequest::create($validated);
 
         // Notifier le plombier si spécifié
-        if ($demande->plombier && $demande->plombier->email) {
+        if ($serviceRequest->plumber && $serviceRequest->plumber->email) {
             Mail::raw(
                 "Nouvelle demande d'intervention :\n\n"
-                . "Type : {$demande->type}\n"
-                . "Urgence : {$demande->urgence}\n"
-                . "Nom : {$demande->nom}\n"
-                . "Tél : {$demande->telephone}\n"
-                . "Lieu : {$demande->cp} {$demande->ville}\n\n"
-                . "Description :\n{$demande->description}",
-                function ($message) use ($demande) {
-                    $message->to($demande->plombier->email)
-                        ->subject('Plombier SOS - Nouvelle demande ' . $demande->urgence);
+                ."Type : {$serviceRequest->type}\n"
+                ."Urgence : {$serviceRequest->urgency}\n"
+                ."Nom : {$serviceRequest->name}\n"
+                ."Tél : {$serviceRequest->phone}\n"
+                ."Lieu : {$serviceRequest->postal_code} {$serviceRequest->city}\n\n"
+                ."Description :\n{$serviceRequest->description}",
+                function ($message) use ($serviceRequest) {
+                    $message->to($serviceRequest->plumber->email)
+                        ->subject('Plombier SOS - Nouvelle demande '.$serviceRequest->urgency);
                 }
             );
         }

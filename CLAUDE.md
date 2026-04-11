@@ -55,19 +55,24 @@ php artisan test
 3 = Dépanneur urgence → /depanneur-urgence/{slug}.html
 ```
 
-### Models clés
+### Models
 
-**Plombier** : Types, scopes `valide()`, `nearby()`, `urgence()`. Champs spéciaux : `urgence_24h`, `devis_gratuit`, `agree_rge`, `specialites` (JSON), `google_rating`, `place_id`.
-
-**Avis** : 5 critères (ponctualité, qualité, prix, propreté, conseil). Support anonyme avec confirmation email.
-
-**Demande** : Mise en relation / demande d'intervention. Niveaux d'urgence : normale, urgente, très urgente.
+| Model | Table | Description |
+|-------|-------|-------------|
+| `Plumber` | `plumbers` | Types, scopes `active()`, `nearby()`, `emergency()`. Champs : `emergency_24h`, `free_quote`, `rge_certified`, `specialties` (JSON), `google_rating`, `place_id` |
+| `Review` | `reviews` | 5 critères (`punctuality_rating`, `quality_rating`, `price_rating`, `cleanliness_rating`, `advice_rating`). Support anonyme avec confirmation email |
+| `ServiceRequest` | `requests` | Mise en relation / demande d'intervention. Urgency : `normal`, `urgent`, `very_urgent`. Status : `new`, `sent`, `accepted`, `refused`, `completed` |
+| `OpeningHour` | `opening_hours` | Horaires par jour (`day_of_week`, `morning_open/close`, `afternoon_open/close`, `is_closed`) |
+| `Department` | `departments` | Primary key : `number`. Champs : `name`, `slug`, `region`, `article` |
+| `City` | `cities` | Champs : `name`, `postal_code`, `slug`, `department`, `population` |
+| `Message` | `messages` | Messages de contact directs |
+| `User` | `users` | Champs : `username`, `last_name`, `first_name`, `phone`, `postal_code`, `city` |
 
 ### Services
 
 - **GooglePlacesService** : Recherche textuelle et nearby via Google Places API (New)
 - **GeoSearchService** : Recherche par proximité Haversine SQL
-- **RatingService** : Recalcul moyenne/nb_avis
+- **RatingService** : Recalcul `average_rating`/`reviews_count`
 - **SlugService** : Slugification URL-safe
 - **AudiotelService** : Masquage numéros + service mise en relation
 
@@ -81,7 +86,7 @@ php artisan test
 
 ## Conventions
 
-- Texte UI en **français**
+- Texte UI en **français**, code/DB en **anglais**
 - URLs SEO avec suffixe `.html`
 - Thème : bleu-900 (header), rouge-600 (urgence/CTA)
 - Composants : `<x-plombier-card>`, `<x-star-rating>`, `<x-phone-reveal>`, `<x-statut-ouverture>`

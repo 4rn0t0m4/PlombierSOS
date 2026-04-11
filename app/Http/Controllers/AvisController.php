@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Avis;
+use App\Models\Review;
 use App\Services\RatingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -13,20 +13,20 @@ class AvisController extends Controller
     public function store(Request $request, RatingService $ratingService)
     {
         $rules = [
-            'plombier_id' => 'required|exists:plombiers,id',
-            'titre' => 'required|string|max:255',
-            'contenu' => 'required|string|max:5000',
-            'note_ponctualite' => 'required|integer|min:1|max:5',
-            'note_qualite' => 'required|integer|min:1|max:5',
-            'note_prix' => 'required|integer|min:1|max:5',
-            'note_proprete' => 'required|integer|min:1|max:5',
-            'note_conseil' => 'required|integer|min:1|max:5',
-            'type_intervention' => 'nullable|string|max:100',
+            'plumber_id' => 'required|exists:plumbers,id',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string|max:5000',
+            'punctuality_rating' => 'required|integer|min:1|max:5',
+            'quality_rating' => 'required|integer|min:1|max:5',
+            'price_rating' => 'required|integer|min:1|max:5',
+            'cleanliness_rating' => 'required|integer|min:1|max:5',
+            'advice_rating' => 'required|integer|min:1|max:5',
+            'intervention_type' => 'nullable|string|max:100',
         ];
 
         if (! $request->user()) {
-            $rules['pseudo_auteur'] = 'required|string|max:255';
-            $rules['email_auteur'] = 'required|email|max:255';
+            $rules['author_username'] = 'required|string|max:255';
+            $rules['author_email'] = 'required|email|max:255';
         }
 
         $validated = $request->validate($rules);
@@ -36,25 +36,25 @@ class AvisController extends Controller
             $validated['user_id'] = $request->user()->id;
             $validated['email_verified_at'] = now();
         } else {
-            $validated['token_validation'] = Str::random(64);
+            $validated['validation_token'] = Str::random(64);
         }
 
-        $avis = Avis::create($validated);
+        $review = Review::create($validated);
 
         if (! $request->user()) {
-            $url = route('avis.confirmer', $avis->token_validation);
-            $plombier = $avis->plombier->titre;
+            $url = route('avis.confirmer', $review->validation_token);
+            $plombier = $review->plumber->title;
 
             Mail::send('emails.avis-confirmation', [
-                'pseudo' => $avis->pseudo_auteur,
+                'pseudo' => $review->author_username,
                 'plombier' => $plombier,
                 'url' => $url,
-            ], function ($message) use ($avis) {
-                $message->to($avis->email_auteur)
+            ], function ($message) use ($review) {
+                $message->to($review->author_email)
                     ->subject('Confirmez votre avis sur Plombier SOS');
             });
 
-            return back()->with('success', 'Un email de confirmation vous a été envoyé à ' . $avis->email_auteur);
+            return back()->with('success', 'Un email de confirmation vous a été envoyé à '.$review->author_email);
         }
 
         return back()->with('success', 'Votre avis a été soumis et sera publié après modération.');
@@ -62,13 +62,13 @@ class AvisController extends Controller
 
     public function confirmerEmail(string $token)
     {
-        $avis = Avis::where('token_validation', $token)->whereNull('email_verified_at')->firstOrFail();
+        $review = Review::where('validation_token', $token)->whereNull('email_verified_at')->firstOrFail();
 
-        $avis->update([
+        $review->update([
             'email_verified_at' => now(),
-            'token_validation' => null,
+            'validation_token' => null,
         ]);
 
-        return redirect($avis->plombier->url)->with('success', 'Votre avis sera publié après modération.');
+        return redirect($review->plumber->url)->with('success', 'Votre avis sera publié après modération.');
     }
 }

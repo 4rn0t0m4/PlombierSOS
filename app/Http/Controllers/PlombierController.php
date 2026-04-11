@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plombier;
+use App\Models\Plumber;
 use App\Services\GeoSearchService;
 
 class PlombierController extends Controller
 {
     public function show(string $slug, int $type, GeoSearchService $geoService)
     {
-        $plombier = Plombier::where('slug', $slug)->valide()->first();
+        $plombier = Plumber::where('slug', $slug)->active()->first();
 
         if (! $plombier) {
             abort(404);
@@ -19,10 +19,10 @@ class PlombierController extends Controller
             return redirect($plombier->url, 301);
         }
 
-        $plombier->load(['approvedAvis.user', 'horairesRelation', 'administrateurs']);
+        $plombier->load(['approvedReviews.user', 'schedules', 'administrateurs']);
 
-        $totalInVille = $plombier->ville_id
-            ? Plombier::valide()->where('ville_id', $plombier->ville_id)->count()
+        $totalInCity = $plombier->city_id
+            ? Plumber::active()->where('city_id', $plombier->city_id)->count()
             : 0;
 
         $nearby = collect();
@@ -32,6 +32,6 @@ class PlombierController extends Controller
                 ->get();
         }
 
-        return view('plombier.show', compact('plombier', 'nearby', 'totalInVille'));
+        return view('plombier.show', compact('plombier', 'nearby', 'totalInCity'));
     }
 }

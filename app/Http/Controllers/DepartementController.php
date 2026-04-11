@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Departement;
+use App\Models\Department;
 
 class DepartementController extends Controller
 {
     public function show(string $slug)
     {
-        $departement = Departement::where('departement_url', $slug)->firstOrFail();
-        $villes = $departement->villes()
-            ->withCount(['plombiers' => fn ($q) => $q->where('valide', true)])
+        $department = Department::where('slug', $slug)->firstOrFail();
+        $cities = $department->villes()
+            ->withCount(['plombiers' => fn ($q) => $q->where('is_active', true)])
             ->having('plombiers_count', '>', 0)
-            ->orderBy('nom_ville')
+            ->orderBy('name')
             ->get();
 
-        return view('departement.show', compact('departement', 'villes'));
+        return view('departement.show', compact('department', 'cities'));
     }
 }

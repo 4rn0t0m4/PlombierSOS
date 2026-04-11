@@ -12,8 +12,8 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'email', 'password', 'pseudo', 'nom', 'prenom',
-        'telephone', 'cp', 'ville', 'ville_id', 'is_admin',
+        'email', 'password', 'username', 'last_name', 'first_name',
+        'phone', 'postal_code', 'city', 'city_id', 'is_admin',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -27,13 +27,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function plombiers(): BelongsToMany
+    public function plumbers(): BelongsToMany
     {
-        return $this->belongsToMany(Plombier::class)->withTimestamps();
+        return $this->belongsToMany(Plumber::class, 'plumber_user')->withTimestamps();
     }
 
-    public function avis(): HasMany
+    public function reviews(): HasMany
     {
-        return $this->hasMany(Avis::class);
+        return $this->hasMany(Review::class);
     }
 }

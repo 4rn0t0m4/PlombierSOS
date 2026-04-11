@@ -46,23 +46,23 @@
 
     <div class="max-w-7xl mx-auto px-4 py-12">
         {{-- Urgence 24h --}}
-        @if($plombiersUrgence->isNotEmpty())
+        @if($emergencyPlumbers->isNotEmpty())
             <section class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <span class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
                     Plombiers disponibles en urgence
                 </h2>
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    @foreach($plombiersUrgence as $plombier)
+                    @foreach($emergencyPlumbers as $plombier)
                         <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition border-l-4 border-l-red-500">
-                            <a href="{{ $plombier->url }}" class="font-semibold text-gray-900 hover:text-blue-600">{{ $plombier->titre }}</a>
-                            <p class="text-sm text-gray-500 mt-1">{{ $plombier->ville }} ({{ $plombier->cp }})</p>
+                            <a href="{{ $plombier->url }}" class="font-semibold text-gray-900 hover:text-blue-600">{{ $plombier->title }}</a>
+                            <p class="text-sm text-gray-500 mt-1">{{ $plombier->city }} ({{ $plombier->postal_code }})</p>
                             @if($plombier->google_rating)
-                                <p class="text-sm mt-1"><span class="text-yellow-500 font-semibold">{{ $plombier->google_rating }}/5</span> <span class="text-gray-400">({{ $plombier->google_nb_avis }} avis Google)</span></p>
+                                <p class="text-sm mt-1"><span class="text-yellow-500 font-semibold">{{ $plombier->google_rating }}/5</span> <span class="text-gray-400">({{ $plombier->google_reviews_count }} avis Google)</span></p>
                             @endif
                             <div class="flex gap-2 mt-2">
                                 <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Urgence 24h</span>
-                                @if($plombier->devis_gratuit)
+                                @if($plombier->free_quote)
                                     <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Devis gratuit</span>
                                 @endif
                             </div>
@@ -73,21 +73,21 @@
         @endif
 
         {{-- Derniers avis --}}
-        @if($derniersAvis->isNotEmpty())
+        @if($latestReviews->isNotEmpty())
             <section class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Derniers avis clients</h2>
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    @foreach($derniersAvis as $avis)
+                    @foreach($latestReviews as $review)
                         <div class="bg-white rounded-lg shadow-sm border p-4">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-yellow-500 font-bold">{{ number_format($avis->moyenne, 1, ',', '') }}/5</span>
-                                <span class="text-xs text-gray-400">{{ $avis->type_intervention ?? 'Intervention' }}</span>
+                                <span class="text-yellow-500 font-bold">{{ number_format($review->average_rating, 1, ',', '') }}/5</span>
+                                <span class="text-xs text-gray-400">{{ $review->intervention_type ?? 'Intervention' }}</span>
                             </div>
-                            <h3 class="font-semibold text-gray-900">{{ $avis->titre }}</h3>
-                            <p class="text-sm text-gray-600 mt-1">{{ Str::limit($avis->contenu, 100) }}</p>
+                            <h3 class="font-semibold text-gray-900">{{ $review->title }}</h3>
+                            <p class="text-sm text-gray-600 mt-1">{{ Str::limit($review->content, 100) }}</p>
                             <div class="mt-3 flex justify-between items-center text-xs text-gray-400">
-                                <span>par {{ $avis->auteur_name }}</span>
-                                <a href="{{ $avis->plombier->url }}" class="text-blue-600 hover:underline">{{ $avis->plombier->titre }}</a>
+                                <span>par {{ $review->author_name }}</span>
+                                <a href="{{ $review->plumber->url }}" class="text-blue-600 hover:underline">{{ $review->plumber->title }}</a>
                             </div>
                         </div>
                     @endforeach
@@ -99,10 +99,10 @@
         <section>
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Plombier par département</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                @foreach($departements as $dept)
-                    <a href="{{ route('departement.show', $dept->departement_url) }}"
+                @foreach($departments as $dept)
+                    <a href="{{ route('departement.show', $dept->slug) }}"
                        class="text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition">
-                        {{ $dept->numero }} - {{ $dept->departement }}
+                        {{ $dept->number }} - {{ $dept->name }}
                     </a>
                 @endforeach
             </div>

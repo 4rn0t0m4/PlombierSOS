@@ -11,10 +11,15 @@
     <div class="flex">
         <aside class="w-64 bg-blue-900 text-white min-h-screen p-6">
             <a href="{{ route('admin.dashboard') }}" class="text-xl font-bold block mb-8">Plombier SOS</a>
-            <nav class="space-y-2 text-sm">
-                <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded hover:bg-blue-800">Dashboard</a>
-                <a href="{{ route('admin.avis.index') }}" class="block px-3 py-2 rounded hover:bg-blue-800">Avis</a>
-                <a href="{{ route('home') }}" class="block px-3 py-2 rounded hover:bg-blue-800 mt-8 text-blue-300">← Retour au site</a>
+            <nav class="space-y-1 text-sm">
+                <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.dashboard') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Dashboard</a>
+                <a href="{{ route('admin.plombiers.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.plombiers.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Plombiers</a>
+                <a href="{{ route('admin.avis.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.avis.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Avis</a>
+                <a href="{{ route('admin.demandes.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.demandes.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Demandes</a>
+                <a href="{{ route('admin.messages.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.messages.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Messages</a>
+                <div class="border-t border-blue-800 my-4"></div>
+                <a href="{{ route('home') }}" class="block px-3 py-2 rounded hover:bg-blue-800 text-blue-300">← Retour au site</a>
+                <a href="{{ route('logout') }}" class="block px-3 py-2 rounded hover:bg-blue-800 text-blue-300">Déconnexion</a>
             </nav>
         </aside>
         <main class="flex-1 p-8">
