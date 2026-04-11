@@ -10,7 +10,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $departments = Department::orderBy('name')->get();
+        $departments = Department::orderBy('number')->get();
         $latestReviews = Review::approved()->with(['plumber', 'user'])->latest()->limit(6)->get();
         $emergencyPlumbers = Plumber::active()->where('emergency_24h', true)->with('schedules')->inRandomOrder()->limit(6)->get();
 
