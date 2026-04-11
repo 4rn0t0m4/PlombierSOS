@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\DepartementController;
@@ -19,9 +20,12 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     if ($token !== 'psos-2026-setup') {
         abort(404);
     }
+    if ($action === 'import-villes') {
+        DB::unprepared(file_get_contents(database_path('seeders/data.sql')));
+        return '<pre>Départements et villes importés.</pre>';
+    }
     match ($action) {
         'migrate' => Artisan::call('migrate', ['--force' => true]),
-        'import-villes' => Artisan::call('import:villes'),
         'import-plombiers' => Artisan::call('import:google-places', ['--limit' => 20]),
         default => abort(404),
     };
