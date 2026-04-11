@@ -27,7 +27,7 @@ Alpine.data('phoneReveal', (encoded, plombierId) => ({
                 },
                 body: JSON.stringify({
                     phone: encoded,
-                    plombier_id: plombierId,
+                    plumber_id: plombierId,
                 }),
             });
             const data = await res.json();
