@@ -11,9 +11,9 @@ class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $plumbers = Plumber::active()->select('slug', 'type', 'updated_at')->get();
+        $plumbers = Plumber::active()->with('cityRelation.departmentRelation')->get();
         $departments = Department::all();
-        $cities = City::has('plombiers')->select('slug', 'updated_at')->get();
+        $cities = City::has('plumbers')->with('departmentRelation')->get();
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
@@ -21,9 +21,9 @@ class SitemapController extends Controller
         // Pages statiques
         $staticPages = [
             ['url' => url('/'), 'priority' => '1.0', 'changefreq' => 'daily'],
-            ['url' => url('/recherche.html'), 'priority' => '0.8', 'changefreq' => 'daily'],
+            ['url' => url('/recherche'), 'priority' => '0.8', 'changefreq' => 'daily'],
             ['url' => url('/urgence'), 'priority' => '0.9', 'changefreq' => 'daily'],
-            ['url' => url('/demande-intervention'), 'priority' => '0.7', 'changefreq' => 'monthly'],
+            ['url' => url('/demande'), 'priority' => '0.7', 'changefreq' => 'monthly'],
         ];
 
         foreach ($staticPages as $page) {
@@ -47,7 +47,7 @@ class SitemapController extends Controller
         // Départements
         foreach ($departments as $dept) {
             $xml .= '<url>';
-            $xml .= '<loc>'.url(route('departement.show', $dept->slug, false)).'</loc>';
+            $xml .= '<loc>'.url('/'.$dept->slug).'</loc>';
             $xml .= '<changefreq>weekly</changefreq>';
             $xml .= '<priority>0.6</priority>';
             $xml .= '</url>';
@@ -55,8 +55,12 @@ class SitemapController extends Controller
 
         // Villes
         foreach ($cities as $city) {
+            $deptSlug = $city->departmentRelation?->slug;
+            if (! $deptSlug) {
+                continue;
+            }
             $xml .= '<url>';
-            $xml .= '<loc>'.url(route('ville.show', $city->slug, false)).'</loc>';
+            $xml .= '<loc>'.url('/'.$deptSlug.'/'.$city->slug).'</loc>';
             $xml .= '<lastmod>'.$city->updated_at->toW3cString().'</lastmod>';
             $xml .= '<changefreq>weekly</changefreq>';
             $xml .= '<priority>0.5</priority>';

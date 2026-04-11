@@ -2,36 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
+use App\Models\Department;
 use App\Models\Plumber;
 use App\Services\GeoSearchService;
 
 class PlombierController extends Controller
 {
-    public function show(string $slug, int $type, GeoSearchService $geoService)
+    public function show(string $deptSlug, string $villeSlug, string $plombierSlug, GeoSearchService $geoService)
     {
-        $plombier = Plumber::where('slug', $slug)->active()->first();
+        $department = Department::where('slug', $deptSlug)->firstOrFail();
+        $city = City::where('slug', $villeSlug)->where('department', $department->number)->firstOrFail();
+        $plumber = Plumber::where('slug', $plombierSlug)->active()->firstOrFail();
 
-        if (! $plombier) {
-            abort(404);
-        }
+        $plumber->load(['approvedReviews.user', 'schedules', 'administrators']);
 
-        if ($plombier->type !== $type) {
-            return redirect($plombier->url, 301);
-        }
-
-        $plombier->load(['approvedReviews.user', 'schedules', 'administrators']);
-
-        $totalInCity = $plombier->city_id
-            ? Plumber::active()->where('city_id', $plombier->city_id)->count()
-            : 0;
+        $totalInCity = Plumber::active()->where('city_id', $city->id)->count();
 
         $nearby = collect();
-        if ($plombier->latitude && $plombier->longitude) {
-            $nearby = $geoService->nearby($plombier->latitude, $plombier->longitude, 15, 5)
-                ->where('id', '!=', $plombier->id)
+        if ($plumber->latitude && $plumber->longitude) {
+            $nearby = $geoService->nearby($plumber->latitude, $plumber->longitude, 15, 5)
+                ->where('id', '!=', $plumber->id)
                 ->get();
         }
 
-        return view('plombier.show', compact('plombier', 'nearby', 'totalInCity'));
+        return view('plombier.show', compact('department', 'city', 'plumber', 'nearby', 'totalInCity'));
     }
 }

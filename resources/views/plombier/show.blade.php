@@ -1,8 +1,8 @@
 <x-layouts.app
-    :title="$plombier->title . ' - ' . $plombier->type_label . ' à ' . $plombier->city . ' - Plombier SOS'"
-    :description="$plombier->title . ', ' . strtolower($plombier->type_label) . ' à ' . $plombier->city . ($plombier->google_rating ? '. Note Google : ' . $plombier->google_rating . '/5' : '') . '. Téléphone, horaires, avis.'"
+    :title="$plumber->title . ' - ' . $plumber->type_label . ' à ' . $plumber->city . ' - Plombier SOS'"
+    :description="$plumber->title . ', ' . strtolower($plumber->type_label) . ' à ' . $plumber->city . ($plumber->google_rating ? '. Note Google : ' . $plumber->google_rating . '/5' : '') . '. Téléphone, horaires, avis.'"
 >
-    @if($plombier->latitude && $plombier->longitude)
+    @if($plumber->latitude && $plumber->longitude)
         @push('head')
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
         @endpush
@@ -12,40 +12,44 @@
         <nav class="text-sm text-gray-500 mb-6">
             <a href="{{ route('home') }}" class="hover:text-blue-600">Accueil</a>
             <span class="mx-1">/</span>
-            <span class="text-gray-900">{{ $plombier->title }}</span>
+            <a href="{{ route('departement.show', $department->slug) }}" class="hover:text-blue-600">{{ $department->name }}</a>
+            <span class="mx-1">/</span>
+            <a href="{{ route('ville.show', [$department->slug, $city->slug]) }}" class="hover:text-blue-600">{{ $city->name }}</a>
+            <span class="mx-1">/</span>
+            <span class="text-gray-900">{{ $plumber->title }}</span>
         </nav>
 
         <div class="grid lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
-                <h1 class="text-3xl font-bold text-gray-900">{{ $plombier->title }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900">{{ $plumber->title }}</h1>
                 <div class="flex items-center gap-3 mt-1">
-                    <span class="text-blue-600">{{ $plombier->type_label }}</span>
-                    <x-statut-ouverture :plombier="$plombier" />
+                    <span class="text-blue-600">{{ $plumber->type_label }}</span>
+                    <x-statut-ouverture :plombier="$plumber" />
                 </div>
 
-                @if($plombier->google_rating)
+                @if($plumber->google_rating)
                     <div class="flex items-center gap-2 mt-3">
-                        <x-star-rating :rating="$plombier->google_rating" />
-                        <span class="font-semibold">{{ number_format($plombier->google_rating, 1, ',', '') }}/5</span>
-                        <span class="text-gray-500">({{ $plombier->google_reviews_count }} avis Google)</span>
+                        <x-star-rating :rating="$plumber->google_rating" />
+                        <span class="font-semibold">{{ number_format($plumber->google_rating, 1, ',', '') }}/5</span>
+                        <span class="text-gray-500">({{ $plumber->google_reviews_count }} avis Google)</span>
                     </div>
                 @endif
 
-                @if($plombier->city_ranking > 0 && $totalInCity > 1)
+                @if($plumber->city_ranking > 0 && $totalInCity > 1)
                     <p class="text-sm text-gray-600 mt-2">
-                        Classé <span class="font-semibold text-blue-600">n°{{ $plombier->city_ranking }}</span>
-                        sur {{ $totalInCity }} plombiers à {{ $plombier->city }}
+                        Classé <span class="font-semibold text-blue-600">n°{{ $plumber->city_ranking }}</span>
+                        sur {{ $totalInCity }} plombiers à {{ $plumber->city }}
                     </p>
                 @endif
 
                 <div class="flex gap-2 mt-3">
-                    @if($plombier->emergency_24h)
+                    @if($plumber->emergency_24h)
                         <span class="text-sm bg-red-100 text-red-700 px-2 py-1 rounded">Urgence 24h/24</span>
                     @endif
-                    @if($plombier->free_quote)
+                    @if($plumber->free_quote)
                         <span class="text-sm bg-green-100 text-green-700 px-2 py-1 rounded">Devis gratuit</span>
                     @endif
-                    @if($plombier->rge_certified)
+                    @if($plumber->rge_certified)
                         <span class="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">Certifié RGE</span>
                     @endif
                 </div>
@@ -55,14 +59,14 @@
                     <h2 class="text-xl font-semibold mb-4">Coordonnées</h2>
                     <div class="grid sm:grid-cols-2 gap-6">
                         <div class="space-y-3">
-                            @if($plombier->address)
+                            @if($plumber->address)
                                 <div>
                                     <p class="text-sm text-gray-500">Adresse</p>
-                                    <p class="text-sm font-medium">{{ $plombier->address }}<br>{{ $plombier->postal_code }} {{ $plombier->city }}</p>
+                                    <p class="text-sm font-medium">{{ $plumber->address }}<br>{{ $plumber->postal_code }} {{ $plumber->city }}</p>
                                 </div>
                             @endif
-                            @if($plombier->phone)
-                                <x-phone-reveal :phone="$plombier->phone" :plombier-id="$plombier->id" />
+                            @if($plumber->phone)
+                                <x-phone-reveal :phone="$plumber->phone" :plombier-id="$plumber->id" />
                             @endif
                             <div class="pt-2">
                                 <button @click="$store.contactModal.open = true" type="button" class="w-full flex items-center justify-center gap-2 bg-blue-900 text-white font-semibold py-3 px-5 rounded-lg hover:bg-blue-800 transition cursor-pointer">
@@ -70,28 +74,28 @@
                                     Contacter
                                 </button>
                             </div>
-                            @if($plombier->website)
-                                <a href="{{ $plombier->website }}" target="_blank" class="block text-sm text-blue-600 hover:underline break-all">{{ $plombier->website }}</a>
+                            @if($plumber->website)
+                                <a href="{{ $plumber->website }}" target="_blank" class="block text-sm text-blue-600 hover:underline break-all">{{ $plumber->website }}</a>
                             @endif
                         </div>
-                        @if($plombier->latitude && $plombier->longitude)
+                        @if($plumber->latitude && $plumber->longitude)
                             <div class="rounded-lg overflow-hidden border" id="map" style="min-height: 220px;"></div>
                         @endif
                     </div>
                 </div>
 
-                @if($plombier->description)
+                @if($plumber->description)
                     <div class="mt-8">
                         <h2 class="text-xl font-semibold mb-3">Présentation</h2>
-                        <div class="prose text-gray-700">{!! nl2br(e($plombier->description)) !!}</div>
+                        <div class="prose text-gray-700">{!! nl2br(e($plumber->description)) !!}</div>
                     </div>
                 @endif
 
-                @if($plombier->schedules->isNotEmpty())
+                @if($plumber->schedules->isNotEmpty())
                     <div class="mt-8">
                         <h2 class="text-xl font-semibold mb-3">Horaires</h2>
                         <table class="w-full text-sm">
-                            @foreach($plombier->schedules as $h)
+                            @foreach($plumber->schedules as $h)
                                 <tr class="border-b">
                                     <td class="py-2 font-medium">{{ $h->day_label }}</td>
                                     <td class="py-2 text-gray-600">
@@ -109,9 +113,9 @@
 
                 {{-- Avis --}}
                 <div class="mt-8">
-                    <h2 class="text-xl font-semibold mb-3">Avis ({{ $plombier->approvedReviews->count() }})</h2>
+                    <h2 class="text-xl font-semibold mb-3">Avis ({{ $plumber->approvedReviews->count() }})</h2>
 
-                    @foreach($plombier->approvedReviews as $review)
+                    @foreach($plumber->approvedReviews as $review)
                         <div class="bg-white border rounded-lg p-4 mb-4">
                             <div class="flex justify-between items-start">
                                 <div>
@@ -141,7 +145,7 @@
                             submitError = '';
                         ">
                             @csrf
-                            <input type="hidden" name="plumber_id" value="{{ $plombier->id }}">
+                            <input type="hidden" name="plumber_id" value="{{ $plumber->id }}">
 
                             @guest
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -211,14 +215,14 @@
             <button @click="$store.contactModal.open = false" type="button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-            <h2 class="text-xl font-bold mb-4">Contacter {{ $plombier->title }}</h2>
+            <h2 class="text-xl font-bold mb-4">Contacter {{ $plumber->title }}</h2>
             <div x-show="sent" class="text-center py-8">
                 <p class="text-lg font-semibold text-green-600">Message envoyé !</p>
                 <button @click="$store.contactModal.open = false" type="button" class="mt-4 bg-blue-900 text-white px-6 py-2 rounded-lg cursor-pointer">Fermer</button>
             </div>
             <form x-show="!sent" @submit.prevent="sending = true; error = ''; const fd = new FormData($el); fetch($el.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } }).then(r => { if (r.ok) { sent = true; } else { return r.json().then(d => { error = d.message || 'Erreur'; }); } }).catch(() => { error = 'Erreur réseau.'; }).finally(() => { sending = false; });" action="{{ route('demande.store') }}">
                 @csrf
-                <input type="hidden" name="plumber_id" value="{{ $plombier->id }}">
+                <input type="hidden" name="plumber_id" value="{{ $plumber->id }}">
                 <input type="hidden" name="type" value="repair">
                 <input type="hidden" name="urgency" value="normal">
                 <div class="mb-3"><label class="block text-sm font-medium mb-1">Nom *</label><input type="text" name="name" required class="w-full border rounded-lg px-3 py-2" value="{{ auth()->user()?->username }}"></div>
@@ -234,13 +238,13 @@
         </div>
     </div>
 
-    @if($plombier->latitude && $plombier->longitude)
+    @if($plumber->latitude && $plumber->longitude)
         <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                var map = L.map('map', { scrollWheelZoom: false }).setView([{{ $plombier->latitude }}, {{ $plombier->longitude }}], 15);
+                var map = L.map('map', { scrollWheelZoom: false }).setView([{{ $plumber->latitude }}, {{ $plumber->longitude }}], 15);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-                L.marker([{{ $plombier->latitude }}, {{ $plombier->longitude }}]).addTo(map).bindPopup('<strong>{{ e($plombier->title) }}</strong>');
+                L.marker([{{ $plumber->latitude }}, {{ $plumber->longitude }}]).addTo(map).bindPopup('<strong>{{ e($plumber->title) }}</strong>');
             });
         </script>
     @endif

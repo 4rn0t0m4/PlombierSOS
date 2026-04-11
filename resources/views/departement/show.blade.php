@@ -9,7 +9,7 @@
         @if($cities->isNotEmpty())
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 @foreach($cities as $city)
-                    <a href="{{ route('ville.show', $city->slug) }}" class="bg-white border rounded-lg px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition">
+                    <a href="{{ route('ville.show', [$department->slug, $city->slug]) }}" class="bg-white border rounded-lg px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition">
                         <span class="font-medium text-gray-900">{{ $city->name }}</span>
                         <span class="text-sm text-gray-400 ml-1">({{ $city->plumbers_count }})</span>
                     </a>

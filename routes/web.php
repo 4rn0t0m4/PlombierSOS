@@ -37,16 +37,6 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
 // Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Plombier detail pages
-Route::get('/plombier/{slug}', [PlombierController::class, 'show'])->defaults('type', 0)->name('plombier.show');
-Route::get('/chauffagiste/{slug}', [PlombierController::class, 'show'])->defaults('type', 1)->name('chauffagiste.show');
-Route::get('/plombier-chauffagiste/{slug}', [PlombierController::class, 'show'])->defaults('type', 2)->name('plombier-chauffagiste.show');
-Route::get('/depanneur-urgence/{slug}', [PlombierController::class, 'show'])->defaults('type', 3)->name('depanneur-urgence.show');
-
-// Department & city pages
-Route::get('/departement/{slug}', [DepartementController::class, 'show'])->name('departement.show');
-Route::get('/ville/{slug}', [VilleController::class, 'show'])->name('ville.show');
-
 // Search
 Route::get('/recherche', [RechercheController::class, 'index'])->name('recherche');
 
@@ -87,3 +77,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('/deconnexion', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// Hierarchical pages: /{department}/{city}/{plumber}
+// These must be last to avoid catching other routes
+Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show');
+Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show');
+Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show');

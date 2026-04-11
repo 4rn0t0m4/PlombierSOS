@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
+use App\Models\Department;
 use App\Models\Plumber;
 
 class VilleController extends Controller
 {
-    public function show(string $slug)
+    public function show(string $deptSlug, string $villeSlug)
     {
-        $city = City::where('slug', $slug)->firstOrFail();
+        $department = Department::where('slug', $deptSlug)->firstOrFail();
+        $city = City::where('slug', $villeSlug)->where('department', $department->number)->firstOrFail();
 
         $query = Plumber::active()->where('city_id', $city->id)
             ->orderByRaw('city_ranking = 0 ASC, city_ranking ASC, average_rating DESC');
@@ -18,8 +20,8 @@ class VilleController extends Controller
             $query = Plumber::active()->nearby($city->latitude, $city->longitude, 20);
         }
 
-        $plombiers = $query->with('schedules')->paginate(20);
+        $plumbers = $query->with('schedules')->paginate(20);
 
-        return view('ville.show', compact('city', 'plombiers'));
+        return view('ville.show', compact('department', 'city', 'plumbers'));
     }
 }
