@@ -14,12 +14,17 @@ use App\Http\Controllers\VilleAutocompleteController;
 use App\Http\Controllers\VilleController;
 use Illuminate\Support\Facades\Route;
 
-// Deploy helper (to remove after first deploy)
-Route::get('/deploy-migrate/{token}', function (string $token) {
+// Deploy helpers (to remove after setup)
+Route::get('/deploy/{action}/{token}', function (string $action, string $token) {
     if ($token !== 'psos-2026-setup') {
         abort(404);
     }
-    Artisan::call('migrate', ['--force' => true]);
+    match ($action) {
+        'migrate' => Artisan::call('migrate', ['--force' => true]),
+        'import-villes' => Artisan::call('import:villes'),
+        'import-plombiers' => Artisan::call('import:google-places', ['--limit' => 20]),
+        default => abort(404),
+    };
     return '<pre>' . Artisan::output() . '</pre>';
 });
 
