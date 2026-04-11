@@ -19,7 +19,7 @@ class PlombierController extends Controller
             return redirect($plombier->url, 301);
         }
 
-        $plombier->load(['approvedReviews.user', 'schedules', 'administrateurs']);
+        $plombier->load(['approvedReviews.user', 'schedules', 'administrators']);
 
         $totalInCity = $plombier->city_id
             ? Plumber::active()->where('city_id', $plombier->city_id)->count()
