@@ -95,17 +95,23 @@
             </section>
         @endif
 
-        {{-- Départements --}}
+        {{-- Carte de France --}}
         <section>
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Plombier par département</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                @foreach($departments as $dept)
-                    <a href="{{ route('departement.show', $dept->slug) }}"
-                       class="text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition">
-                        {{ $dept->number }} - {{ $dept->name }}
-                    </a>
-                @endforeach
-            </div>
+            <x-france-map :departments="$departments" />
+
+            {{-- Liste des départements --}}
+            <details class="mt-6">
+                <summary class="text-sm text-gray-500 cursor-pointer hover:text-blue-600">Voir tous les départements</summary>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-4">
+                    @foreach($departments as $dept)
+                        <a href="{{ route('departement.show', $dept->slug) }}"
+                           class="text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition">
+                            {{ $dept->number }} - {{ $dept->name }}
+                        </a>
+                    @endforeach
+                </div>
+            </details>
         </section>
     </div>
 </x-layouts.app>
