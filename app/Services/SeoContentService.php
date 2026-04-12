@@ -16,37 +16,71 @@ class SeoContentService
 
     public function generateForPlumber(array $data): ?string
     {
-        $prompt = "Tu es un rédacteur SEO spécialisé en plomberie. Rédige un texte de présentation unique (150-200 mots) pour ce professionnel. Le texte doit être naturel, informatif et optimisé pour le référencement local. N'invente pas de services non mentionnés. Utilise des paragraphes HTML (<p>).
+        $prompt = <<<PROMPT
+Rédige une présentation SEO (150-200 mots, en HTML avec des balises <p> uniquement) pour un professionnel de la plomberie.
 
-Informations :
+Règles strictes :
+- Parle du professionnel à la 3e personne ("l'entreprise", "ce plombier")
+- Décris ses services concrets : dépannage, installation, réparation, entretien
+- Mentionne sa zone d'intervention (ville + alentours)
+- Si note Google élevée (>4), mentionne la satisfaction client
+- Si urgence 24h, insiste sur la disponibilité
+- Si devis gratuit, le mentionner
+- N'invente RIEN qui n'est pas dans les données
+- Pas de titre, pas de h1/h2, juste des <p>
+- Ton professionnel et factuel, pas commercial/racoleur
+
+Données :
 - Nom : {$data['title']}
-- Type : {$data['type']}
+- Métier : {$data['type']}
 - Ville : {$data['city']} ({$data['postal_code']})
-- Département : {$data['department']}
-- Urgence 24h : " . ($data['emergency_24h'] ? 'Oui' : 'Non') . "
-- Devis gratuit : " . ($data['free_quote'] ? 'Oui' : 'Non') . "
-- Note Google : " . ($data['google_rating'] ?? 'Non noté') . "/5 ({$data['google_reviews_count']} avis)
-- Description existante : " . ($data['description'] ?? 'Aucune') . "
+- Urgence 24h : URGENCE
+- Devis gratuit : DEVIS
+- Note Google : NOTE/5 (AVIS avis)
+PROMPT;
 
-Réponds UNIQUEMENT avec le HTML (balises <p> uniquement, pas de <h1> ni de titre).";
+        $prompt = str_replace('URGENCE', $data['emergency_24h'] ? 'Oui' : 'Non', $prompt);
+        $prompt = str_replace('DEVIS', $data['free_quote'] ? 'Oui' : 'Non', $prompt);
+        $prompt = str_replace('NOTE', $data['google_rating'] ?? '-', $prompt);
+        $prompt = str_replace('AVIS', $data['google_reviews_count'] ?? 0, $prompt);
 
         return $this->call($prompt);
     }
 
     public function generateForDepartment(array $data): ?string
     {
-        $prompt = "Tu es un rédacteur SEO spécialisé en plomberie. Rédige un texte (100-150 mots) pour la page listant les plombiers du département {$data['name']} (région {$data['region']}). Le texte doit encourager les visiteurs à trouver un plombier dans ce département. Mentionne les grandes villes si possible. Utilise des paragraphes HTML (<p>).
+        $cities = $data['cities'] ?? '';
 
-Réponds UNIQUEMENT avec le HTML (balises <p> uniquement).";
+        $prompt = <<<PROMPT
+Rédige un texte SEO (80-120 mots, balises <p> uniquement) pour une page qui liste les plombiers disponibles dans le département {$data['name']}.
+
+Règles strictes :
+- Explique qu'on peut trouver un plombier qualifié dans ce département
+- Mentionne les types de services : dépannage urgent, installation sanitaire, chauffage, entretien
+- Si des villes sont listées, cite les 3-4 principales comme zones couvertes
+- Pas de formule vide type "votre département de confiance" ou "n'hésitez pas"
+- Ton informatif et direct
+- Pas de titre, juste des <p>
+
+Principales villes du département : {$cities}
+PROMPT;
 
         return $this->call($prompt);
     }
 
     public function generateForCity(array $data): ?string
     {
-        $prompt = "Tu es un rédacteur SEO spécialisé en plomberie. Rédige un texte (100-150 mots) pour la page listant les plombiers de {$data['name']} ({$data['postal_code']}, département {$data['department']}). Le texte doit être optimisé pour le SEO local (\"plombier à {$data['name']}\"). Mentionne les services courants (dépannage, installation, entretien). Utilise des paragraphes HTML (<p>).
+        $prompt = <<<PROMPT
+Rédige un texte SEO (80-120 mots, balises <p> uniquement) pour une page listant les plombiers à {$data['name']} ({$data['postal_code']}).
 
-Réponds UNIQUEMENT avec le HTML (balises <p> uniquement).";
+Règles strictes :
+- Commence par "À {$data['name']}" ou "Les plombiers à {$data['name']}"
+- Décris les services disponibles : dépannage urgent, fuite d'eau, débouchage, installation, chaudière
+- Mentionne que les professionnels interviennent à {$data['name']} et ses environs
+- Pas de formule creuse ("n'hésitez pas", "faites confiance")
+- Ton informatif et concret
+- Pas de titre, juste des <p>
+PROMPT;
 
         return $this->call($prompt);
     }
@@ -72,16 +106,15 @@ Réponds UNIQUEMENT avec le HTML (balises <p> uniquement).";
 
             if ($response->ok()) {
                 $text = $response->json('content.0.text');
-                // Remove markdown code fences if present
-                $text = preg_replace('/^```html\s*/', '', $text);
-                $text = preg_replace('/\s*```$/', '', $text);
+                $text = preg_replace('/^```html\s*/s', '', $text);
+                $text = preg_replace('/\s*```$/s', '', $text);
 
                 return trim($text);
             }
 
-            Log::warning('Anthropic API error: ' . $response->body());
+            Log::warning('Anthropic API error: '.$response->body());
         } catch (\Exception $e) {
-            Log::warning('Anthropic API exception: ' . $e->getMessage());
+            Log::warning('Anthropic API exception: '.$e->getMessage());
         }
 
         return null;

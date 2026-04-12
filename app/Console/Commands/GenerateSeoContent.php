@@ -83,9 +83,12 @@ class GenerateSeoContent extends Command
         foreach ($departments as $dept) {
             $this->line("  {$dept->number} - {$dept->name}...");
 
+            $topCities = $dept->cities()->orderByDesc('population')->limit(5)->pluck('name')->implode(', ');
+
             $content = $seo->generateForDepartment([
                 'name' => $dept->name,
                 'region' => $dept->region,
+                'cities' => $topCities,
             ]);
 
             if ($content) {
