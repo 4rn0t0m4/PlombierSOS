@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin/
 Disallow: /ajax/
 
-Sitemap: https://plombier-sos.fr/sitemap.xml
+Sitemap: https://www.plombier-sos.fr/sitemap.xml
