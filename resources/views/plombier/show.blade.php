@@ -88,7 +88,7 @@
                     <div class="mt-8">
                         <h2 class="text-xl font-semibold mb-3">Présentation</h2>
                         @if($plumber->seo_content)
-                            <div class="prose text-gray-700">{!! $plumber->seo_content !!}</div>
+                            <div class="prose text-gray-700">{!! app(\App\Services\SeoLinkService::class)->addLinks($plumber->seo_content) !!}</div>
                         @elseif($plumber->description)
                             <div class="prose text-gray-700">{!! nl2br(e($plumber->description)) !!}</div>
                         @endif

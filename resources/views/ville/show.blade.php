@@ -9,7 +9,7 @@
         </nav>
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Plombier à {{ $city->name }}</h1>
         @if($city->seo_content)
-            <div class="prose text-gray-700 mb-8">{!! $city->seo_content !!}</div>
+            <div class="prose text-gray-700 mb-8">{!! app(\App\Services\SeoLinkService::class)->addLinks($city->seo_content) !!}</div>
         @endif
         @if($plumbers->isNotEmpty())
             <div class="space-y-4">
