@@ -44,7 +44,9 @@ document.addEventListener('alpine:init', () => {
         init() {
             // Attach data attributes to all SVG department paths
             this.$refs.mapContainer.querySelectorAll('path[id^="dep_"]').forEach(path => {
-                const depNum = path.id.replace('dep_', '');
+                let depNum = path.id.replace('dep_', '');
+                // Map Corsica SVG ids (2a/2b) to DB number (20)
+                if (depNum === '2a' || depNum === '2b') depNum = '20';
                 const dept = this.depts[depNum];
                 if (dept) {
                     path.dataset.dept = depNum;
