@@ -1,0 +1,85 @@
+{
+    "name": "mozex/anthropic-laravel",
+    "description": "Laravel integration for the Anthropic Claude API — facades, config publishing, testing fakes, and seamless access to messages, streaming, and tool use.",
+    "keywords": [
+        "laravel",
+        "php",
+        "anthropic",
+        "claude",
+        "sdk",
+        "api",
+        "client",
+        "ai",
+        "llm",
+        "nlp",
+        "chatbot",
+        "streaming",
+        "generative-ai",
+        "text-generation",
+        "claude-opus",
+        "claude-sonnet",
+        "claude-haiku"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mozex",
+            "email": "hello@mozex.dev",
+            "homepage": "https://mozex.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2.0",
+        "guzzlehttp/guzzle": "^7.9.3",
+        "laravel/framework": "^11.29|^12.12|^13.0",
+        "mozex/anthropic-php": "^1.4.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.22.0",
+        "pestphp/pest": "^3.8.2|^4.0.0",
+        "pestphp/pest-plugin-arch": "^3.1.1|^4.0.0",
+        "phpstan/phpstan": "^2.1",
+        "spatie/ray": "^1.41",
+        "symfony/var-dumper": "^7.2.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Anthropic\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "COV": "0.11.0",
+        "laravel": {
+            "providers": [
+                "Anthropic\\Laravel\\ServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "lint": "pint -v",
+        "test:lint": "pint --test -v",
+        "test:types": "phpstan analyse --ansi",
+        "test:unit": "pest --colors=always",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:unit"
+        ]
+    }
+}

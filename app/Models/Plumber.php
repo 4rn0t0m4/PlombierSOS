@@ -28,7 +28,7 @@ class Plumber extends Model
         'type', 'title', 'slug', 'place_id',
         'email', 'phone', 'mobile_phone', 'website', 'google_maps_url',
         'address', 'postal_code', 'city', 'department', 'city_id', 'latitude', 'longitude',
-        'service_radius', 'description', 'opening_hours', 'pricing', 'siret', 'photo',
+        'service_radius', 'description', 'seo_content', 'opening_hours', 'pricing', 'siret', 'photo',
         'emergency_24h', 'free_quote', 'rge_certified', 'specialties',
         'average_rating', 'reviews_count', 'google_rating', 'google_reviews_count', 'google_reviews',
         'is_active', 'city_ranking',

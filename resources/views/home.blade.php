@@ -44,6 +44,26 @@
         </div>
     </section>
 
+    {{-- SEO intro --}}
+    <section class="bg-white border-b">
+        <div class="max-w-4xl mx-auto px-4 py-10">
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div>
+                    <div class="text-3xl font-bold text-blue-900">24h/24</div>
+                    <p class="text-gray-600 mt-1">Plombiers d'urgence disponibles jour et nuit, week-ends et jours fériés</p>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-blue-900">Devis gratuit</div>
+                    <p class="text-gray-600 mt-1">Obtenez un devis sans engagement pour tous vos travaux de plomberie</p>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-blue-900">Avis vérifiés</div>
+                    <p class="text-gray-600 mt-1">Consultez les avis Google et les retours clients avant de choisir</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="max-w-7xl mx-auto px-4 py-12">
         {{-- Urgence 24h --}}
         @if($emergencyPlumbers->isNotEmpty())

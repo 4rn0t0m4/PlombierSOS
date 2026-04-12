@@ -6,6 +6,9 @@
             <span class="text-gray-900">{{ $department->name }}</span>
         </nav>
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Plombier {{ $department->article }}{{ $department->name }}</h1>
+        @if($department->seo_content)
+            <div class="prose text-gray-700 mb-8">{!! $department->seo_content !!}</div>
+        @endif
         @if($cities->isNotEmpty())
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 @foreach($cities as $city)

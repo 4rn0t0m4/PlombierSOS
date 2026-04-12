@@ -84,10 +84,14 @@
                     </div>
                 </div>
 
-                @if($plumber->description)
+                @if($plumber->seo_content || $plumber->description)
                     <div class="mt-8">
                         <h2 class="text-xl font-semibold mb-3">Présentation</h2>
-                        <div class="prose text-gray-700">{!! nl2br(e($plumber->description)) !!}</div>
+                        @if($plumber->seo_content)
+                            <div class="prose text-gray-700">{!! $plumber->seo_content !!}</div>
+                        @elseif($plumber->description)
+                            <div class="prose text-gray-700">{!! nl2br(e($plumber->description)) !!}</div>
+                        @endif
                     </div>
                 @endif
 

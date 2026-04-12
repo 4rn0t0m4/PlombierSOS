@@ -29,6 +29,9 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'migrate' => Artisan::call('migrate', ['--force' => true]),
         'import-plombiers' => Artisan::call('import:google-places', ['--limit' => 20]),
         'import-reviews' => Artisan::call('import:google-reviews', ['--limit' => 50]),
+        'seo-plumbers' => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 20]),
+        'seo-departments' => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102]),
+        'seo-cities' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50]),
         default => abort(404),
     };
 

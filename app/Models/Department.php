@@ -14,7 +14,7 @@ class Department extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'number', 'name', 'slug', 'region', 'article', 'latitude', 'longitude',
+        'number', 'name', 'slug', 'region', 'article', 'seo_content', 'latitude', 'longitude',
     ];
 
     public function cities(): HasMany
