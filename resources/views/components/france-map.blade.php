@@ -131,11 +131,11 @@
 
         {{-- 21 - Côte-d'Or --}}
         <path class="dept" d="M596,330 L616,316 L636,320 L654,314 L664,328 L660,346 L648,360 L632,366 L614,360 L598,366 L588,350 L590,338 Z"
-              data-dept="{{ $deptIndex->has('21') ? '21' : '' }}" data-name="{{ $deptIndex->has('21') ? $deptIndex['21']->name : &quot;Côte-d'Or&quot; }}" data-slug="{{ $deptIndex->has('21') ? $deptIndex['21']->slug : '' }}" />
+              data-dept="{{ $deptIndex->has('21') ? '21' : '' }}" data-name="{{ $deptIndex['21']->name ?? 'Cote-dOr' }}" data-slug="{{ $deptIndex->has('21') ? $deptIndex['21']->slug : '' }}" />
 
         {{-- 22 - Côtes-d'Armor --}}
         <path class="dept" d="M174,218 L194,206 L216,210 L234,204 L244,216 L240,232 L228,244 L212,248 L194,244 L178,250 L168,236 L168,224 Z"
-              data-dept="{{ $deptIndex->has('22') ? '22' : '' }}" data-name="{{ $deptIndex->has('22') ? $deptIndex['22']->name : &quot;Côtes-d'Armor&quot; }}" data-slug="{{ $deptIndex->has('22') ? $deptIndex['22']->slug : '' }}" />
+              data-dept="{{ $deptIndex->has('22') ? '22' : '' }}" data-name="{{ $deptIndex['22']->name ?? 'Cotes-dArmor' }}" data-slug="{{ $deptIndex->has('22') ? $deptIndex['22']->slug : '' }}" />
 
         {{-- 23 - Creuse --}}
         <path class="dept" d="M444,488 L462,476 L480,480 L494,474 L504,486 L502,502 L492,514 L476,518 L460,514 L446,520 L436,506 L438,494 Z"
@@ -427,7 +427,7 @@
 
         {{-- 95 - Val-d'Oise --}}
         <path class="dept" d="M458,186 L470,178 L482,182 L492,176 L498,186 L496,198 L488,206 L478,208 L468,204 L458,210 L452,198 Z"
-              data-dept="{{ $deptIndex->has('95') ? '95' : '' }}" data-name="{{ $deptIndex->has('95') ? $deptIndex['95']->name : &quot;Val-d'Oise&quot; }}" data-slug="{{ $deptIndex->has('95') ? $deptIndex['95']->slug : '' }}" />
+              data-dept="{{ $deptIndex->has('95') ? '95' : '' }}" data-name="{{ $deptIndex['95']->name ?? 'Val-dOise' }}" data-slug="{{ $deptIndex->has('95') ? $deptIndex['95']->slug : '' }}" />
     </svg>
 
     {{-- DOM-TOM --}}
