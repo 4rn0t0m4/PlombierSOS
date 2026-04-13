@@ -43,6 +43,8 @@ class ScrapeEmails extends Command
                 $this->info("    Trouvé : {$email}");
                 $found++;
             } else {
+                // Mark as scraped with empty string to avoid re-processing
+                $plumber->update(['email' => '']);
                 $this->line('    Aucun email trouvé.');
             }
 
