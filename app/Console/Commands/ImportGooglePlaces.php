@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
 class ImportGooglePlaces extends Command
 {
     protected $signature = 'import:google-places
-        {--limit=10 : Nombre de plombiers à importer par exécution}
+        {--limit=20 : Nombre max d\'appels API par exécution}
         {--departement= : Forcer un département spécifique}
         {--dry-run : Simuler sans insérer en base}';
 
@@ -39,13 +39,14 @@ class ImportGooglePlaces extends Command
             return self::FAILURE;
         }
 
-        $limit = (int) $this->option('limit');
+        $maxApiCalls = (int) $this->option('limit');
         $dryRun = $this->option('dry-run');
         $imported = 0;
+        $apiCalls = 0;
 
         $dept = $this->getNextDepartment();
         if (! $dept) {
-            // All departments done: advance city_offset and restart
+            // All departments done for this offset: advance and restart
             $this->info('Tous les départements traités. Passage aux villes suivantes.');
             DB::table('google_import_progress')->update([
                 'completed' => false,
@@ -60,11 +61,8 @@ class ImportGooglePlaces extends Command
             return self::SUCCESS;
         }
 
-        // Get current offset for this department
         $progress = DB::table('google_import_progress')->where('department', $dept->number)->first();
         $cityOffset = $progress->city_offset ?? 0;
-
-        $this->info("Département : {$dept->number} - {$dept->name} (offset villes: $cityOffset)");
 
         $allCities = City::where('department', $dept->number)
             ->orderByDesc('population')
@@ -74,8 +72,7 @@ class ImportGooglePlaces extends Command
         $cities = array_slice($allCities, $cityOffset, 5);
 
         if (empty($cities)) {
-            // No more cities in this department, mark as done
-            $this->info("  Plus de villes à chercher, département terminé.");
+            $this->info("  {$dept->name} : plus de villes à chercher.");
             DB::table('google_import_progress')->updateOrInsert(
                 ['department' => $dept->number],
                 ['completed' => true, 'last_run_at' => now(), 'updated_at' => now()]
@@ -84,26 +81,22 @@ class ImportGooglePlaces extends Command
             return self::SUCCESS;
         }
 
-        foreach (self::SEARCH_QUERIES as $searchType) {
-            if ($imported >= $limit) {
-                break;
-            }
+        $this->info("Département : {$dept->number} - {$dept->name} (villes " . ($cityOffset + 1) . '-' . ($cityOffset + count($cities)) . '/' . count($allCities) . ')');
 
+        // Execute ALL queries for ALL cities in this batch (no early stop)
+        foreach (self::SEARCH_QUERIES as $searchType) {
             foreach ($cities as $city) {
-                if ($imported >= $limit) {
-                    break;
+                if ($apiCalls >= $maxApiCalls) {
+                    break 2;
                 }
 
                 $query = "$searchType $city";
                 $this->line("  Recherche : $query");
 
                 $places = $this->searchPlaces($query);
+                $apiCalls++;
 
                 foreach ($places as $place) {
-                    if ($imported >= $limit) {
-                        break;
-                    }
-
                     $placeId = $place['id'] ?? '';
                     if (! $placeId) {
                         continue;
@@ -153,17 +146,21 @@ class ImportGooglePlaces extends Command
             }
         }
 
+        // Only mark completed when all queries have been executed
+        $allQueriesDone = $apiCalls < $maxApiCalls;
+
         DB::table('google_import_progress')->updateOrInsert(
             ['department' => $dept->number],
             [
-                'completed' => true,
+                'completed' => $allQueriesDone,
                 'total_imported' => DB::raw("total_imported + $imported"),
                 'last_run_at' => now(),
                 'updated_at' => now(),
             ]
         );
 
-        $this->info("$imported plombier(s) importé(s) dans le {$dept->number} - {$dept->name}.");
+        $status = $allQueriesDone ? 'terminé' : 'en cours (reprendra au prochain appel)';
+        $this->info("$imported importé(s), $apiCalls appels API. Département : $status.");
 
         return self::SUCCESS;
     }
