@@ -35,6 +35,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'seo-departments-force' => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102, '--force' => true]),
         'seo-cities' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50]),
         'seo-cities-force' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50, '--force' => true]),
+        'create-admin' => Artisan::call('make:admin'),
         default => abort(404),
     };
 
