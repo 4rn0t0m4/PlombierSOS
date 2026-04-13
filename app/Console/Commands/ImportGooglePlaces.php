@@ -169,6 +169,7 @@ class ImportGooglePlaces extends Command
         ])->timeout(15)->post('https://places.googleapis.com/v1/places:searchText', [
             'textQuery' => $query,
             'languageCode' => 'fr',
+            'regionCode' => 'FR',
             'maxResultCount' => 20,
         ]);
 
@@ -214,6 +215,18 @@ class ImportGooglePlaces extends Command
         }
 
         $cp = $this->extractComponent($place, 'postal_code');
+        $country = $this->extractComponent($place, 'country');
+
+        // Skip non-French results
+        if ($country && $country !== 'France') {
+            return null;
+        }
+
+        // Validate French postal code (5 digits)
+        if ($cp && ! preg_match('/^\d{5}$/', $cp)) {
+            return null;
+        }
+
         $cityName = $this->extractComponent($place, 'locality');
         $rue = $this->extractComponent($place, 'route');
         $numero = $this->extractComponent($place, 'street_number');
