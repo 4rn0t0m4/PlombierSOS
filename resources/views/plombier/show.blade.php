@@ -8,6 +8,49 @@
         @endpush
     @endif
 
+    @push('jsonld')
+    @php
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Plumber',
+            'name' => $plumber->title,
+            'url' => url($plumber->url),
+            'telephone' => $plumber->phone,
+        ];
+        if ($plumber->address) {
+            $schema['address'] = [
+                '@type' => 'PostalAddress',
+                'streetAddress' => $plumber->address,
+                'addressLocality' => $plumber->city,
+                'postalCode' => $plumber->postal_code,
+                'addressCountry' => 'FR',
+            ];
+        }
+        if ($plumber->latitude && $plumber->longitude) {
+            $schema['geo'] = [
+                '@type' => 'GeoCoordinates',
+                'latitude' => $plumber->latitude,
+                'longitude' => $plumber->longitude,
+            ];
+        }
+        if ($plumber->google_rating) {
+            $schema['aggregateRating'] = [
+                '@type' => 'AggregateRating',
+                'ratingValue' => $plumber->google_rating,
+                'reviewCount' => $plumber->google_reviews_count,
+                'bestRating' => 5,
+            ];
+        }
+        if ($plumber->website) {
+            $schema['sameAs'] = $plumber->website;
+        }
+        if ($plumber->emergency_24h) {
+            $schema['openingHours'] = 'Mo-Su 00:00-23:59';
+        }
+    @endphp
+    <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endpush
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         <nav class="text-sm text-gray-500 mb-6">
             <a href="{{ route('home') }}" class="hover:text-blue-600">Accueil</a>

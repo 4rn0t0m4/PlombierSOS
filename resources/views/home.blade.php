@@ -64,6 +64,37 @@
         </div>
     </section>
 
+    {{-- Comment ça marche --}}
+    <section class="bg-gray-50 py-12">
+        <div class="max-w-5xl mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-900 text-center mb-10">Comment ça marche ?</h2>
+            <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div>
+                    <div class="w-14 h-14 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">1</div>
+                    <h3 class="font-semibold text-gray-900">Recherchez</h3>
+                    <p class="text-sm text-gray-600 mt-1">Entrez votre ville ou code postal pour trouver les plombiers à proximité</p>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">2</div>
+                    <h3 class="font-semibold text-gray-900">Comparez</h3>
+                    <p class="text-sm text-gray-600 mt-1">Consultez les avis, les notes Google et les spécialités de chaque professionnel</p>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">3</div>
+                    <h3 class="font-semibold text-gray-900">Contactez</h3>
+                    <p class="text-sm text-gray-600 mt-1">Appelez directement ou demandez un devis gratuit en quelques clics</p>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Résolu !</h3>
+                    <p class="text-sm text-gray-600 mt-1">Votre problème de plomberie est pris en charge par un professionnel qualifié</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="max-w-7xl mx-auto px-4 py-12">
         {{-- Urgence 24h --}}
         @if($emergencyPlumbers->isNotEmpty())
