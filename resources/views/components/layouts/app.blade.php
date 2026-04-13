@@ -10,8 +10,8 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- Google Analytics --}}
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-75PPQJKWBL"></script>
-    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-75PPQJKWBL');</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YMCGVC6SYS"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-YMCGVC6SYS');</script>
     @stack('head')
 </head>
 <body class="min-h-screen bg-gray-50 flex flex-col" x-data>
