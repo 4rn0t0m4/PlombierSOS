@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
 class ImportGooglePlaces extends Command
 {
     protected $signature = 'import:google-places
-        {--limit=20 : Nombre max d\'appels API par exécution}
+        {--limit=7 : Nombre max d\'appels API par exécution}
         {--departement= : Forcer un département spécifique}
         {--dry-run : Simuler sans insérer en base}';
 
