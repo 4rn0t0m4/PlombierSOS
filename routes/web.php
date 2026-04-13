@@ -86,9 +86,15 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/deconnexion', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Admin (must be before catch-all routes)
+Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(base_path('routes/admin.php'));
+
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-$reservedSlugs = 'admin|ajax|deploy|avis|connexion|inscription|deconnexion|recherche|urgence|demande|mentions-legales|confidentialite|mot-de-passe-oublie|reinitialiser-mot-de-passe|sitemap\.xml|up';
-Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', '^(?!'.$reservedSlugs.').*$');
-Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', '^(?!'.$reservedSlugs.').*$');
-Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', '^(?!'.$reservedSlugs.').*$');
+$reserved = '^(?!admin$|ajax$|deploy$|avis$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
+Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', $reserved);
+Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', $reserved);
+Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', $reserved);
