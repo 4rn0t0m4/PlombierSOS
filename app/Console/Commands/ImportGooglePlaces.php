@@ -45,21 +45,43 @@ class ImportGooglePlaces extends Command
 
         $dept = $this->getNextDepartment();
         if (! $dept) {
-            $this->info('Tous les départements traités. Reset.');
-            DB::table('google_import_progress')->update(['completed' => false]);
+            // All departments done: advance city_offset and restart
+            $this->info('Tous les départements traités. Passage aux villes suivantes.');
+            DB::table('google_import_progress')->update([
+                'completed' => false,
+                'city_offset' => DB::raw('city_offset + 5'),
+            ]);
             $dept = $this->getNextDepartment();
         }
 
-        $this->info("Département : {$dept->number} - {$dept->name}");
+        if (! $dept) {
+            $this->info('Aucun département à traiter.');
 
-        $cities = City::where('department', $dept->number)
+            return self::SUCCESS;
+        }
+
+        // Get current offset for this department
+        $progress = DB::table('google_import_progress')->where('department', $dept->number)->first();
+        $cityOffset = $progress->city_offset ?? 0;
+
+        $this->info("Département : {$dept->number} - {$dept->name} (offset villes: $cityOffset)");
+
+        $allCities = City::where('department', $dept->number)
             ->orderByDesc('population')
-            ->limit(5)
             ->pluck('name')
             ->toArray();
 
+        $cities = array_slice($allCities, $cityOffset, 5);
+
         if (empty($cities)) {
-            $cities = [$dept->name];
+            // No more cities in this department, mark as done
+            $this->info("  Plus de villes à chercher, département terminé.");
+            DB::table('google_import_progress')->updateOrInsert(
+                ['department' => $dept->number],
+                ['completed' => true, 'last_run_at' => now(), 'updated_at' => now()]
+            );
+
+            return self::SUCCESS;
         }
 
         foreach (self::SEARCH_QUERIES as $searchType) {
