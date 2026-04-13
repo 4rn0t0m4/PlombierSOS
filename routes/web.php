@@ -88,6 +88,7 @@ Route::get('/deconnexion', [AuthController::class, 'logout'])->middleware('auth'
 
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show');
+// Exclude reserved slugs (admin, ajax, deploy, etc.)
+Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', '^(?!admin|ajax|deploy|avis|connexion|inscription|deconnexion|recherche|urgence|demande|mentions-legales|confidentialite|mot-de-passe-oublie|reinitialiser-mot-de-passe|sitemap\.xml).*$');
 Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show');
 Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show');
