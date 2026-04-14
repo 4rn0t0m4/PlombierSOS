@@ -40,15 +40,33 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var plumbers = @json($markers);
-
-                if (!plumbers.length) return;
+                var deptCode = '{{ $department->number }}';
 
                 var map = L.map('dept-map', { scrollWheelZoom: false });
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(map);
 
-                var bounds = [];
+                // Load department boundary from geo.api.gouv.fr
+                fetch('https://geo.api.gouv.fr/departements/' + deptCode + '?fields=contour')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.contour) {
+                            var boundary = L.geoJSON(data.contour, {
+                                style: { color: '#1e3a8a', weight: 2, fillColor: '#3b82f6', fillOpacity: 0.05 }
+                            }).addTo(map);
+                            map.fitBounds(boundary.getBounds(), { padding: [30, 30] });
+                        }
+                    })
+                    .catch(function () {
+                        // Fallback: fit to markers
+                        if (plumbers.length) {
+                            var bounds = plumbers.map(function (p) { return [p.lat, p.lng]; });
+                            map.fitBounds(bounds, { padding: [30, 30] });
+                        }
+                    });
+
+                // Add plumber markers
                 plumbers.forEach(function (p) {
                     var marker = L.marker([p.lat, p.lng]).addTo(map);
                     marker.bindPopup(
@@ -57,12 +75,7 @@
                         p.city + ' (' + p.postal_code + ')' +
                         (p.rating ? '<br>⭐ ' + p.rating + '/5' : '')
                     );
-                    bounds.push([p.lat, p.lng]);
                 });
-
-                if (bounds.length) {
-                    map.fitBounds(bounds, { padding: [30, 30] });
-                }
             });
         </script>
     @endif
