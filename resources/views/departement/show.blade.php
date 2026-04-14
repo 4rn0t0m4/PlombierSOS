@@ -42,10 +42,11 @@
                 var plumbers = @json($markers);
                 var deptCode = '{{ $department->number }}';
 
-                var map = L.map('dept-map', { scrollWheelZoom: false });
+                var map = L.map('dept-map', { scrollWheelZoom: false }).setView([{{ $department->latitude ?? 46.6 }}, {{ $department->longitude ?? 2.3 }}], 9);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(map);
+                setTimeout(function () { map.invalidateSize(); }, 100);
 
                 // Load department boundary from geo.api.gouv.fr
                 fetch('https://geo.api.gouv.fr/departements/' + deptCode + '?fields=contour')
