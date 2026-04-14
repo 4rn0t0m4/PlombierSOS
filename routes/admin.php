@@ -5,9 +5,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DemandeController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\PlombierController;
+use App\Http\Controllers\Admin\StatsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('stats', [StatsController::class, 'index'])->name('stats');
 
 // Plombiers
 Route::get('plombiers', [PlombierController::class, 'index'])->name('plombiers.index');
