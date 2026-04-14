@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\Plumber;
 
 class DepartementController extends Controller
 {
@@ -15,6 +16,14 @@ class DepartementController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('departement.show', compact('department', 'cities'));
+        $plumbers = Plumber::active()
+            ->where('department', $department->number)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->select('title', 'slug', 'city', 'postal_code', 'latitude', 'longitude', 'google_rating', 'type', 'city_id')
+            ->with('cityRelation.departmentRelation')
+            ->get();
+
+        return view('departement.show', compact('department', 'cities', 'plumbers'));
     }
 }

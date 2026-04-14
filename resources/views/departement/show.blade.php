@@ -1,4 +1,8 @@
 <x-layouts.app :title="'Plombier ' . $department->article . $department->name . ' - Plombier SOS'">
+    @push('head')
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
+    @endpush
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         <nav class="text-sm text-gray-500 mb-6">
             <a href="{{ route('home') }}" class="hover:text-blue-600">Accueil</a>
@@ -9,7 +13,15 @@
         @if($department->seo_content)
             <div class="prose text-gray-700 mb-8">{!! app(\App\Services\SeoLinkService::class)->addLinks($department->seo_content) !!}</div>
         @endif
+
+        {{-- Carte --}}
+        @if($plumbers->isNotEmpty())
+            <div class="mb-8 rounded-lg overflow-hidden border shadow-sm" id="dept-map" style="height: 400px;"></div>
+        @endif
+
+        {{-- Villes --}}
         @if($cities->isNotEmpty())
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Villes avec plombiers</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 @foreach($cities as $city)
                     <a href="{{ route('ville.show', [$department->slug, $city->slug]) }}" class="bg-white border rounded-lg px-4 py-3 hover:border-blue-300 hover:bg-blue-50 transition">
@@ -22,4 +34,45 @@
             <p class="text-gray-500">Aucun plombier trouvé dans ce département.</p>
         @endif
     </div>
+
+    @if($plumbers->isNotEmpty())
+        <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var plumbers = @json($plumbers->map(fn ($p) => [
+                    'title' => $p->title,
+                    'url' => $p->url,
+                    'city' => $p->city,
+                    'postal_code' => $p->postal_code,
+                    'lat' => (float) $p->latitude,
+                    'lng' => (float) $p->longitude,
+                    'rating' => $p->google_rating,
+                    'type' => $p->type_label,
+                ]));
+
+                if (!plumbers.length) return;
+
+                var map = L.map('dept-map', { scrollWheelZoom: false });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                var bounds = [];
+                plumbers.forEach(function (p) {
+                    var marker = L.marker([p.lat, p.lng]).addTo(map);
+                    marker.bindPopup(
+                        '<strong><a href="' + p.url + '">' + p.title + '</a></strong><br>' +
+                        '<span style="color:#666">' + p.type + '</span><br>' +
+                        p.city + ' (' + p.postal_code + ')' +
+                        (p.rating ? '<br>⭐ ' + p.rating + '/5' : '')
+                    );
+                    bounds.push([p.lat, p.lng]);
+                });
+
+                if (bounds.length) {
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                }
+            });
+        </script>
+    @endif
 </x-layouts.app>
