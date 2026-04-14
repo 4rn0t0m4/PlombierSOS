@@ -1,6 +1,7 @@
 <x-layouts.app :title="'Plombier ' . $department->article . $department->name . ' - Plombier SOS'">
     @push('head')
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
     @endpush
 
     <div class="max-w-7xl mx-auto px-4 py-8">
@@ -16,7 +17,7 @@
 
         {{-- Carte --}}
         @if($plumbers->isNotEmpty())
-            <div class="mb-8 rounded-lg overflow-hidden border shadow-sm" id="dept-map" style="height: 400px;"></div>
+            <div class="mb-8 rounded-lg border shadow-sm" id="dept-map" style="height: 400px; width: 100%; z-index: 0;"></div>
         @endif
 
         {{-- Villes --}}
@@ -36,15 +37,14 @@
     </div>
 
     @if($plumbers->isNotEmpty())
-        <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var plumbers = @json($markers);
                 var deptCode = '{{ $department->number }}';
 
                 var map = L.map('dept-map', { scrollWheelZoom: false }).setView([{{ $department->latitude ?? 46.6 }}, {{ $department->longitude ?? 2.3 }}], 9);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap'
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(map);
                 setTimeout(function () { map.invalidateSize(); }, 100);
 
