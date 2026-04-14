@@ -51,6 +51,7 @@ class ImportGooglePlaces extends Command
             DB::table('google_import_progress')->update([
                 'completed' => false,
                 'city_offset' => DB::raw('city_offset + 5'),
+                'query_offset' => 0,
             ]);
             $dept = $this->getNextDepartment();
         }
@@ -63,6 +64,7 @@ class ImportGooglePlaces extends Command
 
         $progress = DB::table('google_import_progress')->where('department', $dept->number)->first();
         $cityOffset = $progress->city_offset ?? 0;
+        $queryOffset = $progress->query_offset ?? 0;
 
         $allCities = City::where('department', $dept->number)
             ->orderByDesc('population')
@@ -81,85 +83,90 @@ class ImportGooglePlaces extends Command
             return self::SUCCESS;
         }
 
-        $this->info("Département : {$dept->number} - {$dept->name} (villes " . ($cityOffset + 1) . '-' . ($cityOffset + count($cities)) . '/' . count($allCities) . ')');
-
-        // Execute ALL queries for ALL cities in this batch (no early stop)
+        // Build flat list of all query+city combinations
+        $allQueries = [];
         foreach (self::SEARCH_QUERIES as $searchType) {
             foreach ($cities as $city) {
-                if ($apiCalls >= $maxApiCalls) {
-                    break 2;
+                $allQueries[] = "$searchType $city";
+            }
+        }
+
+        $totalQueries = count($allQueries);
+        $this->info("Département : {$dept->number} - {$dept->name} (villes " . ($cityOffset + 1) . '-' . ($cityOffset + count($cities)) . '/' . count($allCities) . ", requête " . ($queryOffset + 1) . "/$totalQueries)");
+
+        // Skip already processed queries, resume from queryOffset
+        for ($i = $queryOffset; $i < $totalQueries && $apiCalls < $maxApiCalls; $i++) {
+            $query = $allQueries[$i];
+            $this->line("  Recherche : $query");
+
+            $places = $this->searchPlaces($query);
+            $apiCalls++;
+
+            foreach ($places as $place) {
+                $placeId = $place['id'] ?? '';
+                if (! $placeId) {
+                    continue;
                 }
 
-                $query = "$searchType $city";
-                $this->line("  Recherche : $query");
+                if (DB::table('google_imports')->where('place_id', $placeId)->exists()) {
+                    continue;
+                }
 
-                $places = $this->searchPlaces($query);
-                $apiCalls++;
+                $nom = $place['displayName']['text'] ?? '';
+                $cp = $this->extractComponent($place, 'postal_code');
 
-                foreach ($places as $place) {
-                    $placeId = $place['id'] ?? '';
-                    if (! $placeId) {
-                        continue;
-                    }
+                if (Plumber::where('title', $nom)->where('postal_code', $cp)->exists()) {
+                    DB::table('google_imports')->insertOrIgnore([
+                        'place_id' => $placeId,
+                        'status' => 'duplicate',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
 
-                    if (DB::table('google_imports')->where('place_id', $placeId)->exists()) {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    $nom = $place['displayName']['text'] ?? '';
-                    $cp = $this->extractComponent($place, 'postal_code');
+                if ($dryRun) {
+                    $cityName = $this->extractComponent($place, 'locality');
+                    $this->info("    [DRY-RUN] $nom - $cityName ($cp)");
+                    $imported++;
 
-                    if (Plumber::where('title', $nom)->where('postal_code', $cp)->exists()) {
-                        DB::table('google_imports')->insertOrIgnore([
-                            'place_id' => $placeId,
-                            'status' => 'duplicate',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                    continue;
+                }
 
-                        continue;
-                    }
+                $plumberId = $this->createPlumber($place);
 
-                    if ($dryRun) {
-                        $cityName = $this->extractComponent($place, 'locality');
-                        $this->info("    [DRY-RUN] $nom - $cityName ($cp)");
-                        $imported++;
-
-                        continue;
-                    }
-
-                    $plumberId = $this->createPlumber($place);
-
-                    if ($plumberId) {
-                        DB::table('google_imports')->insertOrIgnore([
-                            'place_id' => $placeId,
-                            'plumber_id' => $plumberId,
-                            'status' => 'imported',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                        $imported++;
-                        $cityName = $this->extractComponent($place, 'locality');
-                        $this->info("    IMPORTÉ : $nom - $cityName ($cp)");
-                    }
+                if ($plumberId) {
+                    DB::table('google_imports')->insertOrIgnore([
+                        'place_id' => $placeId,
+                        'plumber_id' => $plumberId,
+                        'status' => 'imported',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $imported++;
+                    $cityName = $this->extractComponent($place, 'locality');
+                    $this->info("    IMPORTÉ : $nom - $cityName ($cp)");
                 }
             }
         }
 
-        // Only mark completed when all queries have been executed
-        $allQueriesDone = $apiCalls < $maxApiCalls;
+        // Save progress
+        $newQueryOffset = $i ?? $queryOffset;
+        $allDone = $newQueryOffset >= $totalQueries;
 
         DB::table('google_import_progress')->updateOrInsert(
             ['department' => $dept->number],
             [
-                'completed' => $allQueriesDone,
+                'completed' => $allDone,
+                'query_offset' => $allDone ? 0 : $newQueryOffset,
                 'total_imported' => DB::raw("total_imported + $imported"),
                 'last_run_at' => now(),
                 'updated_at' => now(),
             ]
         );
 
-        $status = $allQueriesDone ? 'terminé' : 'en cours (reprendra au prochain appel)';
+        $status = $allDone ? 'terminé' : "en cours (reprendra à la requête " . ($newQueryOffset + 1) . "/$totalQueries)";
         $this->info("$imported importé(s), $apiCalls appels API. Département : $status.");
 
         return self::SUCCESS;
