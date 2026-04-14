@@ -16,7 +16,7 @@ class ImportGooglePlaces extends Command
         {--departement= : Forcer un département spécifique}
         {--dry-run : Simuler sans insérer en base}';
 
-    protected $description = 'Importe des plombiers depuis Google Places API — 1 département par appel';
+    protected $description = 'Importe des plombiers depuis Google Places API — 1 requête par appel, jamais de doublon';
 
     private string $apiKey;
 
@@ -29,6 +29,8 @@ class ImportGooglePlaces extends Command
         'chauffagiste',
     ];
 
+    private const CITIES_PER_BATCH = 10;
+
     public function handle(): int
     {
         $this->apiKey = config('services.google_places.api_key');
@@ -40,49 +42,30 @@ class ImportGooglePlaces extends Command
 
         $dryRun = $this->option('dry-run');
 
-        // Get next department to process
         $dept = $this->getNextDepartment();
-        if (! $dept) {
-            // All done: advance to next round (next query + city combo)
-            $this->info('Tous les départements traités. Passage au round suivant.');
-            DB::table('google_import_progress')->update([
-                'completed' => false,
-                'query_offset' => DB::raw('query_offset + 1'),
-            ]);
-            $dept = $this->getNextDepartment();
-        }
 
         if (! $dept) {
-            $this->info('Aucun département à traiter.');
+            $this->info('Tous les départements sont entièrement traités.');
 
             return self::SUCCESS;
         }
 
         $progress = DB::table('google_import_progress')->where('department', $dept->number)->first();
+        $cityOffset = $progress->city_offset ?? 0;
         $queryOffset = $progress->query_offset ?? 0;
 
-        // Get top cities for this department
+        // Get cities for current batch
+        $allCitiesCount = City::where('department', $dept->number)->count();
         $cities = City::where('department', $dept->number)
             ->orderByDesc('population')
-            ->limit(10)
+            ->offset($cityOffset)
+            ->limit(self::CITIES_PER_BATCH)
             ->pluck('name')
             ->toArray();
 
         if (empty($cities)) {
-            $cities = [$dept->name];
-        }
-
-        // Build all possible queries: each search type × each city
-        $allQueries = [];
-        foreach ($cities as $city) {
-            foreach (self::SEARCH_QUERIES as $searchType) {
-                $allQueries[] = "$searchType $city";
-            }
-        }
-
-        // Pick the query at current offset
-        if ($queryOffset >= count($allQueries)) {
-            $this->info("  {$dept->name} : toutes les requêtes épuisées.");
+            // No more cities: department is definitively done
+            $this->info("{$dept->name} : plus aucune ville à chercher. Département terminé définitivement.");
             DB::table('google_import_progress')->updateOrInsert(
                 ['department' => $dept->number],
                 ['completed' => true, 'last_run_at' => now(), 'updated_at' => now()]
@@ -91,8 +74,37 @@ class ImportGooglePlaces extends Command
             return self::SUCCESS;
         }
 
+        // Build all queries for this batch
+        $allQueries = [];
+        foreach ($cities as $city) {
+            foreach (self::SEARCH_QUERIES as $searchType) {
+                $allQueries[] = "$searchType $city";
+            }
+        }
+
+        $totalQueries = count($allQueries);
+
+        // All queries in this batch done: advance to next batch of cities
+        if ($queryOffset >= $totalQueries) {
+            $newCityOffset = $cityOffset + self::CITIES_PER_BATCH;
+            $this->info("{$dept->name} : batch villes " . ($cityOffset + 1) . '-' . ($cityOffset + count($cities)) . " terminé. Passage aux villes suivantes.");
+            DB::table('google_import_progress')->updateOrInsert(
+                ['department' => $dept->number],
+                [
+                    'completed' => false,
+                    'city_offset' => $newCityOffset,
+                    'query_offset' => 0,
+                    'last_run_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            return self::SUCCESS;
+        }
+
         $query = $allQueries[$queryOffset];
-        $this->info("Département : {$dept->number} - {$dept->name} (requête " . ($queryOffset + 1) . '/' . count($allQueries) . ')');
+        $cityRange = ($cityOffset + 1) . '-' . ($cityOffset + count($cities)) . "/$allCitiesCount";
+        $this->info("Département : {$dept->number} - {$dept->name} (villes $cityRange, requête " . ($queryOffset + 1) . "/$totalQueries)");
         $this->line("  Recherche : $query");
 
         // Execute single API call
@@ -147,19 +159,19 @@ class ImportGooglePlaces extends Command
             }
         }
 
-        // Mark this department as done for this round
+        // Advance query_offset
         DB::table('google_import_progress')->updateOrInsert(
             ['department' => $dept->number],
             [
-                'completed' => true,
-                'query_offset' => $queryOffset,
+                'completed' => false,
+                'query_offset' => $queryOffset + 1,
                 'total_imported' => DB::raw("total_imported + $imported"),
                 'last_run_at' => now(),
                 'updated_at' => now(),
             ]
         );
 
-        $this->info("$imported importé(s). Prochain appel → département suivant.");
+        $this->info("$imported importé(s). Prochain appel → même département, requête suivante.");
 
         return self::SUCCESS;
     }
@@ -170,11 +182,11 @@ class ImportGooglePlaces extends Command
             return Department::where('number', $this->option('departement'))->first();
         }
 
-        $processed = DB::table('google_import_progress')
+        $completed = DB::table('google_import_progress')
             ->where('completed', true)
             ->pluck('department');
 
-        return Department::whereNotIn('number', $processed)
+        return Department::whereNotIn('number', $completed)
             ->orderBy('number')
             ->first();
     }
