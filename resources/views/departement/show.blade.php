@@ -48,24 +48,19 @@
                 }).addTo(map);
                 setTimeout(function () { map.invalidateSize(); }, 100);
 
-                // Load department boundary from geo.api.gouv.fr
-                fetch('https://geo.api.gouv.fr/departements/' + deptCode + '?fields=contour')
+                // Load department boundary from france-geojson
+                var deptSlug = '{{ $department->number }}-{{ Str::slug($department->name) }}';
+                var geoUrl = 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/' + deptSlug + '/departement-' + deptSlug + '.geojson';
+                fetch(geoUrl)
                     .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.contour) {
-                            var boundary = L.geoJSON(data.contour, {
-                                style: { color: '#1e3a8a', weight: 2, fillColor: '#3b82f6', fillOpacity: 0.05 }
-                            }).addTo(map);
-                            map.fitBounds(boundary.getBounds(), { padding: [30, 30] });
-                        }
+                    .then(function (geojson) {
+                        L.geoJSON(geojson, {
+                            style: { color: '#1e3a8a', weight: 2, fillColor: '#3b82f6', fillOpacity: 0.05 }
+                        }).addTo(map);
+                        map.fitBounds(L.geoJSON(geojson).getBounds(), { padding: [20, 20] });
                     })
-                    .catch(function () {
-                        // Fallback: fit to markers
-                        if (plumbers.length) {
-                            var bounds = plumbers.map(function (p) { return [p.lat, p.lng]; });
-                            map.fitBounds(bounds, { padding: [30, 30] });
-                        }
-                    });
+                    .catch(function () {});
+
 
                 // Add plumber markers
                 plumbers.forEach(function (p) {
