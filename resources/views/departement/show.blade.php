@@ -39,16 +39,7 @@
         <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                var plumbers = @json($plumbers->map(fn ($p) => [
-                    'title' => $p->title,
-                    'url' => $p->url,
-                    'city' => $p->city,
-                    'postal_code' => $p->postal_code,
-                    'lat' => (float) $p->latitude,
-                    'lng' => (float) $p->longitude,
-                    'rating' => $p->google_rating,
-                    'type' => $p->type_label,
-                ]));
+                var plumbers = @json($markers);
 
                 if (!plumbers.length) return;
 

@@ -24,6 +24,17 @@ class DepartementController extends Controller
             ->with('cityRelation.departmentRelation')
             ->get();
 
-        return view('departement.show', compact('department', 'cities', 'plumbers'));
+        $markers = $plumbers->map(fn ($p) => [
+            'title' => $p->title,
+            'url' => $p->url,
+            'city' => $p->city,
+            'postal_code' => $p->postal_code,
+            'lat' => (float) $p->latitude,
+            'lng' => (float) $p->longitude,
+            'rating' => $p->google_rating,
+            'type' => $p->type_label,
+        ])->values();
+
+        return view('departement.show', compact('department', 'cities', 'plumbers', 'markers'));
     }
 }
