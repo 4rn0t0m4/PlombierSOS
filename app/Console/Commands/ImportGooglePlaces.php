@@ -29,6 +29,55 @@ class ImportGooglePlaces extends Command
         'chauffagiste',
     ];
 
+    private const ALLOWED_TYPES = [
+        'plumber',
+        'electrician',
+        'roofing_contractor',
+        'general_contractor',
+        'contractor',
+        'hvac_contractor',
+    ];
+
+    private const EXCLUDED_TYPES = [
+        'hospital',
+        'doctor',
+        'dentist',
+        'pharmacy',
+        'health',
+        'veterinary_care',
+        'school',
+        'university',
+        'church',
+        'restaurant',
+        'cafe',
+        'bar',
+        'lodging',
+        'hotel',
+        'car_repair',
+        'car_dealer',
+        'gas_station',
+        'bank',
+        'atm',
+        'insurance_agency',
+        'real_estate_agency',
+        'lawyer',
+        'accounting',
+        'beauty_salon',
+        'hair_care',
+        'spa',
+        'gym',
+        'supermarket',
+        'grocery_or_supermarket',
+        'home_improvement_store',
+        'hardware_store',
+        'department_store',
+        'furniture_store',
+        'store',
+        'shopping_mall',
+        'home_goods_store',
+        'electronics_store',
+    ];
+
     private const CITIES_PER_BATCH = 10;
 
     public function handle(): int
@@ -117,6 +166,13 @@ class ImportGooglePlaces extends Command
                 continue;
             }
 
+            $placeTypes = $place['types'] ?? [];
+            if ($this->isExcludedType($placeTypes)) {
+                $this->line("    IGNORÉ (type non-plombier) : ".($place['displayName']['text'] ?? 'inconnu'));
+
+                continue;
+            }
+
             if (DB::table('google_imports')->where('place_id', $placeId)->exists()) {
                 continue;
             }
@@ -198,6 +254,7 @@ class ImportGooglePlaces extends Command
             'X-Goog-FieldMask' => self::FIELD_MASK,
         ])->timeout(15)->post('https://places.googleapis.com/v1/places:searchText', [
             'textQuery' => $query,
+            'includedType' => 'plumber',
             'languageCode' => 'fr',
             'regionCode' => 'FR',
             'maxResultCount' => 20,
@@ -375,6 +432,26 @@ class ImportGooglePlaces extends Command
         ])->filter(fn ($r) => ! empty($r['text']))->values()->all();
 
         return ! empty($formatted) ? json_encode($formatted, JSON_UNESCAPED_UNICODE) : null;
+    }
+
+    private function isExcludedType(array $placeTypes): bool
+    {
+        // If the place has at least one allowed type, keep it
+        foreach ($placeTypes as $type) {
+            if (in_array($type, self::ALLOWED_TYPES)) {
+                return false;
+            }
+        }
+
+        // If the place has any excluded type, reject it
+        foreach ($placeTypes as $type) {
+            if (in_array($type, self::EXCLUDED_TYPES)) {
+                return true;
+            }
+        }
+
+        // No allowed type found, but no excluded type either — keep it (generic business)
+        return false;
     }
 
     private function extractComponent(array $place, string $type): string
