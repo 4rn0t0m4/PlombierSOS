@@ -338,6 +338,14 @@ class ImportGooglePlaces extends Command
                 ->first();
         }
 
+        // Fallback: search by city name + department (for cities with multiple postal codes)
+        if (! $city && $cityName && $cp) {
+            $deptPrefix = substr($cp, 0, 2);
+            $city = City::where('department', $deptPrefix)
+                ->where('name', 'LIKE', $cityName.'%')
+                ->first();
+        }
+
         $deptNum = $city?->department;
         if (! $deptNum && $cp && strlen($cp) >= 2) {
             $deptNum = substr($cp, 0, 2);

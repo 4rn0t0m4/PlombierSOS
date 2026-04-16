@@ -13,7 +13,14 @@ class VilleController extends Controller
         $department = Department::where('slug', $deptSlug)->firstOrFail();
         $city = City::where('slug', $villeSlug)->where('department', $department->number)->firstOrFail();
 
-        $query = Plumber::active()->where('city_id', $city->id)
+        $query = Plumber::active()
+            ->where(function ($q) use ($city) {
+                $q->where('city_id', $city->id)
+                    ->orWhere(function ($q2) use ($city) {
+                        $q2->where('city', 'LIKE', $city->name.'%')
+                            ->where('department', $city->department);
+                    });
+            })
             ->orderByRaw('city_ranking = 0 ASC, city_ranking ASC, average_rating DESC');
 
         if ($query->count() === 0 && $city->latitude && $city->longitude) {

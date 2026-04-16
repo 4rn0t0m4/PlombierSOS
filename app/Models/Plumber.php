@@ -67,11 +67,6 @@ class Plumber extends Model
         $city = $this->cityRelation;
         $dept = $city?->departmentRelation;
 
-        // Try to build full URL from relations
-        if ($dept && $city) {
-            return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
-        }
-
         // Fallback: find department and city by raw fields
         if (! $dept && $this->department) {
             $dept = Department::where('number', $this->department)->first();
@@ -81,15 +76,22 @@ class Plumber extends Model
             $city = City::where('postal_code', $this->postal_code)->first();
         }
 
+        // Fallback: search by city name + department (for cities with multiple postal codes)
+        if (! $city && $this->city && $this->department) {
+            $city = City::where('department', $this->department)
+                ->where('name', 'LIKE', $this->city.'%')
+                ->first();
+        }
+
         if ($dept && $city) {
             return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
         }
 
-        if ($dept) {
-            return '/'.$dept->slug;
-        }
-
-        return '/';
+        return route('plombier.show', [
+            'deptSlug' => $dept->slug ?? $this->department,
+            'villeSlug' => $city->slug ?? ($this->city ?? 'ville'),
+            'plombierSlug' => $this->slug,
+        ]);
     }
 
     public function getOpeningStatusAttribute(): string

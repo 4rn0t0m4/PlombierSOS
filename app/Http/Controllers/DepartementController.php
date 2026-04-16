@@ -12,9 +12,20 @@ class DepartementController extends Controller
         $department = Department::where('slug', $deptSlug)->firstOrFail();
         $cities = $department->cities()
             ->withCount(['plumbers' => fn ($q) => $q->where('is_active', true)])
-            ->having('plumbers_count', '>', 0)
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->each(function ($city) use ($department) {
+                $byName = Plumber::active()
+                    ->where('city', 'LIKE', $city->name.'%')
+                    ->where('department', $department->number)
+                    ->where(function ($q) use ($city) {
+                        $q->whereNull('city_id')->orWhere('city_id', '!=', $city->id);
+                    })
+                    ->count();
+                $city->plumbers_count += $byName;
+            })
+            ->filter(fn ($city) => $city->plumbers_count > 0)
+            ->values();
 
         $plumbers = Plumber::active()
             ->where('department', $department->number)
