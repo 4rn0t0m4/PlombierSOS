@@ -233,9 +233,18 @@ class ImportGooglePlaces extends Command
             $this->info("$imported importé(s). $totalImported au total → limite de 100 atteinte, département terminé.");
             DB::table('google_import_progress')->where('department', $dept->number)
                 ->update(['completed' => true, 'updated_at' => now()]);
-        } else {
-            $this->info("$imported importé(s) ($totalImported au total). Prochain appel → même département, requête suivante.");
+
+            return self::SUCCESS;
         }
+
+        // If nothing was imported, immediately process the next query
+        if ($imported === 0) {
+            $this->info("0 importé, passage à la requête suivante...");
+
+            return $this->handle();
+        }
+
+        $this->info("$imported importé(s) ($totalImported au total). Prochain appel → même département, requête suivante.");
 
         return self::SUCCESS;
     }
