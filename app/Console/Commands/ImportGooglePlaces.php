@@ -216,18 +216,26 @@ class ImportGooglePlaces extends Command
         }
 
         // Advance query_offset
+        $totalImported = ($progress->total_imported ?? 0) + $imported;
         DB::table('google_import_progress')->updateOrInsert(
             ['department' => $dept->number],
             [
                 'completed' => false,
                 'query_offset' => $queryOffset + 1,
-                'total_imported' => DB::raw("total_imported + $imported"),
+                'total_imported' => $totalImported,
                 'last_run_at' => now(),
                 'updated_at' => now(),
             ]
         );
 
-        $this->info("$imported importé(s). Prochain appel → même département, requête suivante.");
+        // Cap at 100 imports per department
+        if ($totalImported >= 100) {
+            $this->info("$imported importé(s). $totalImported au total → limite de 100 atteinte, département terminé.");
+            DB::table('google_import_progress')->where('department', $dept->number)
+                ->update(['completed' => true, 'updated_at' => now()]);
+        } else {
+            $this->info("$imported importé(s) ($totalImported au total). Prochain appel → même département, requête suivante.");
+        }
 
         return self::SUCCESS;
     }
