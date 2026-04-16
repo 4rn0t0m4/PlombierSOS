@@ -65,14 +65,31 @@ class Plumber extends Model
     public function getUrlAttribute(): string
     {
         $city = $this->cityRelation;
-        if ($city) {
-            $dept = $city->departmentRelation;
-            if ($dept) {
-                return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
-            }
+        $dept = $city?->departmentRelation;
+
+        // Try to build full URL from relations
+        if ($dept && $city) {
+            return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
         }
 
-        return '/'.$this->slug;
+        // Fallback: find department and city by raw fields
+        if (! $dept && $this->department) {
+            $dept = Department::where('number', $this->department)->first();
+        }
+
+        if (! $city && $this->postal_code) {
+            $city = City::where('postal_code', $this->postal_code)->first();
+        }
+
+        if ($dept && $city) {
+            return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
+        }
+
+        if ($dept) {
+            return '/'.$dept->slug;
+        }
+
+        return '/';
     }
 
     public function getOpeningStatusAttribute(): string
