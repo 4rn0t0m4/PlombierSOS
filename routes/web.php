@@ -93,6 +93,9 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->name('admin.')
     ->group(base_path('routes/admin.php'));
 
+// 301 redirects for old URLs with index.html
+Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->where('slug', '[^/]+');
+
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
 $reserved = '^(?!admin$|ajax$|deploy$|avis$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
