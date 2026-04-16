@@ -83,15 +83,18 @@ class Plumber extends Model
                 ->first();
         }
 
-        if ($dept && $city) {
-            return '/'.$dept->slug.'/'.$city->slug.'/'.$this->slug;
+        $deptSlug = $dept?->slug ?? $this->department;
+        $citySlug = $city?->slug ?? $this->city;
+
+        if ($deptSlug && $citySlug) {
+            return '/'.$deptSlug.'/'.$citySlug.'/'.$this->slug;
         }
 
-        return route('plombier.show', [
-            'deptSlug' => $dept->slug ?? $this->department,
-            'villeSlug' => $city->slug ?? ($this->city ?? 'ville'),
-            'plombierSlug' => $this->slug,
-        ]);
+        if ($deptSlug) {
+            return '/'.$deptSlug;
+        }
+
+        return '/';
     }
 
     public function getOpeningStatusAttribute(): string
