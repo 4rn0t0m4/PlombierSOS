@@ -63,13 +63,9 @@
                             {{ $dept->active_count }}
                         </td>
                         <td class="px-4 py-2 text-center">
-                            @if($progress)
-                                <span class="text-xs {{ $isCompleted ? 'text-green-600' : 'text-orange-500' }}">
-                                    {{ $progress->total_imported ?? 0 }} importés
-                                </span>
-                            @else
-                                <span class="text-xs text-gray-300">-</span>
-                            @endif
+                            <span class="text-xs {{ $dept->google_imported_count > 0 ? 'text-green-600' : 'text-gray-300' }}">
+                                {{ $dept->google_imported_count }} importés
+                            </span>
                         </td>
                         <td class="px-4 py-2 text-right">
                             @if($progress)

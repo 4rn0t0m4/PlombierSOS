@@ -26,6 +26,7 @@ class StatsController extends Controller
         $departments = Department::select('departments.number', 'departments.name', 'departments.slug')
             ->selectRaw('COUNT(plumbers.id) as plumbers_count')
             ->selectRaw('SUM(CASE WHEN plumbers.is_active = 1 THEN 1 ELSE 0 END) as active_count')
+            ->selectRaw('SUM(CASE WHEN plumbers.place_id IS NOT NULL THEN 1 ELSE 0 END) as google_imported_count')
             ->leftJoin('plumbers', function ($join) {
                 $join->on('departments.number', '=', 'plumbers.department');
             })
