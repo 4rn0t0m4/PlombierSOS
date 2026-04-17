@@ -76,10 +76,17 @@ class ChatbotController extends Controller
                 if (in_array($deptPrefix, ['97', '98'])) {
                     $deptPrefix = substr($postalCode, 0, 3);
                 }
-                $query->where('department', $deptPrefix);
+                $query->where(function ($q) use ($deptPrefix, $city) {
+                    $q->where('department', $deptPrefix);
+                    if ($city) {
+                        $q->orWhere('city', 'LIKE', "$city%");
+                    }
+                });
             } elseif ($city) {
                 $query->where('city', 'LIKE', "$city%");
             }
+
+            Log::info('Chatbot search', ['city' => $city, 'postal_code' => $postalCode, 'deptPrefix' => $deptPrefix ?? null]);
 
             $plumbers = $query->orderByDesc('google_rating')
                 ->limit(5)
