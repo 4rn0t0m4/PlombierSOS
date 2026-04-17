@@ -37,8 +37,8 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'seo-departments-force' => fn () => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102, '--force' => true]),
         'seo-cities' => fn () => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50]),
         'seo-cities-force' => fn () => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50, '--force' => true]),
-        'review-summary' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
-        'review-summary-force' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50, '--force' => true]),
+        'review-summary' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 5]),
+        'review-summary-force' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 5, '--force' => true]),
         'cache-clear' => function () {
             Artisan::call('cache:clear');
             Artisan::call('route:clear');
