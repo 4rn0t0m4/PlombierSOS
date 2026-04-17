@@ -131,6 +131,8 @@ Alpine.data('chatbot', () => ({
 
             if (data.message) {
                 this.messages.push({ role: 'assistant', content: data.message });
+                if (data.city) this.city = data.city;
+                if (data.postal_code) this.postalCode = data.postal_code;
             } else {
                 this.messages.push({ role: 'assistant', content: data.error || 'Désolé, une erreur est survenue.' });
             }
@@ -148,8 +150,14 @@ Alpine.data('chatbot', () => ({
     },
 
     formatMessage(content) {
+        let html = content;
         // Convert markdown links [text](url) to HTML
-        return content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800">$1</a>');
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800">$1</a>');
+        // Convert bold **text**
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        // Convert line breaks
+        html = html.replace(/\n/g, '<br>');
+        return html;
     },
 }));
 

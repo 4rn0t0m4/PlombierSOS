@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Plumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,12 +34,48 @@ class ChatbotController extends Controller
         $city = $request->input('city');
         $postalCode = $request->input('postal_code');
 
+        // Try to detect city/postal code from all user messages
+        if (! $postalCode || ! $city) {
+            $allUserText = collect($messages)
+                ->where('role', 'user')
+                ->pluck('content')
+                ->implode(' ');
+
+            // Detect postal code
+            if (! $postalCode && preg_match('/\b(\d{5})\b/', $allUserText, $cpMatch)) {
+                $postalCode = $cpMatch[1];
+            }
+
+            // Detect city name from database
+            if (! $city && ! $postalCode) {
+                $words = preg_split('/[\s,.\-\']+/', $allUserText);
+                for ($i = count($words) - 1; $i >= 0; $i--) {
+                    $candidate = $words[$i];
+                    if (mb_strlen($candidate) < 3) {
+                        continue;
+                    }
+                    $found = City::where('name', 'LIKE', $candidate.'%')
+                        ->where('population', '>', 0)
+                        ->orderByDesc('population')
+                        ->first();
+                    if ($found) {
+                        $city = $found->name;
+                        $postalCode = $found->postal_code;
+                        break;
+                    }
+                }
+            }
+        }
+
         // Find relevant plumbers if location is provided
         $plumbersContext = '';
         if ($city || $postalCode) {
             $query = Plumber::active();
             if ($postalCode) {
                 $deptPrefix = substr($postalCode, 0, 2);
+                if (in_array($deptPrefix, ['97', '98'])) {
+                    $deptPrefix = substr($postalCode, 0, 3);
+                }
                 $query->where('department', $deptPrefix);
             } elseif ($city) {
                 $query->where('city', 'LIKE', "$city%");
@@ -101,7 +138,11 @@ SYSTEM;
             if ($response->ok()) {
                 $text = $response->json('content.0.text');
 
-                return response()->json(['message' => $text]);
+                return response()->json([
+                    'message' => $text,
+                    'city' => $city,
+                    'postal_code' => $postalCode,
+                ]);
             }
 
             Log::warning('Chatbot API error: '.$response->body());
