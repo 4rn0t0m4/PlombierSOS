@@ -26,7 +26,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         return '<pre>Départements et villes importés.</pre>';
     }
     match ($action) {
-        'migrate' => Artisan::call('migrate', ['--force' => true]) + Artisan::call('route:clear') + Artisan::call('cache:clear') + Artisan::call('view:clear'),
+        'migrate' => Artisan::call('migrate', ['--force' => true]) + Artisan::call('route:clear') + Artisan::call('cache:clear') + Artisan::call('view:clear') + Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
         'import-plombiers' => Artisan::call('import:google-places'),
         'import-reviews' => Artisan::call('import:google-reviews', ['--limit' => 50]),
         'scrape-emails' => Artisan::call('scrape:emails', ['--limit' => 50]),
