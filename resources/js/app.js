@@ -141,7 +141,10 @@ Alpine.data('chatbot', () => ({
         }
 
         this.loading = false;
-        this.$nextTick(() => this.scrollToBottom());
+        this.$nextTick(() => {
+            this.scrollToBottom();
+            this.$refs.chatInput?.focus();
+        });
     },
 
     scrollToBottom() {
