@@ -56,6 +56,31 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     return '<pre>'.Artisan::output().'</pre>';
 });
 
+// Deploy helper for review summaries (separate route to bypass cache)
+Route::get('/deploy-run/{token}', function (string $token) {
+    if ($token !== 'psos-2026-setup') {
+        abort(404);
+    }
+    $output = '';
+
+    Artisan::call('cache:clear');
+    $output .= Artisan::output();
+    Artisan::call('route:clear');
+    $output .= Artisan::output();
+    Artisan::call('view:clear');
+    $output .= Artisan::output();
+
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+        $output .= "OPcache reset.\n";
+    }
+
+    Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]);
+    $output .= Artisan::output();
+
+    return '<pre>'.$output.'</pre>';
+});
+
 // Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
