@@ -17,7 +17,7 @@ class ChatbotController extends Controller
         $request->validate([
             'messages' => 'required|array|min:1|max:20',
             'messages.*.role' => 'required|in:user,assistant',
-            'messages.*.content' => 'required|string|max:500',
+            'messages.*.content' => 'required|string|max:2000',
             'city' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:5',
         ]);
