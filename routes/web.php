@@ -25,23 +25,33 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
 
         return '<pre>Départements et villes importés.</pre>';
     }
-    match ($action) {
-        'migrate' => Artisan::call('migrate', ['--force' => true]) + Artisan::call('route:clear') + Artisan::call('cache:clear') + Artisan::call('view:clear') + Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
-        'import-plombiers' => Artisan::call('import:google-places'),
-        'import-reviews' => Artisan::call('import:google-reviews', ['--limit' => 50]),
-        'scrape-emails' => Artisan::call('scrape:emails', ['--limit' => 50]),
-        'seo-plumbers' => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50]),
-        'seo-plumbers-force' => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50, '--force' => true]),
-        'seo-departments' => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102]),
-        'seo-departments-force' => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102, '--force' => true]),
-        'seo-cities' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50]),
-        'seo-cities-force' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50, '--force' => true]),
-        'review-summary' => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
-        'review-summary-force' => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50, '--force' => true]),
-        'cache-clear' => Artisan::call('cache:clear') + Artisan::call('route:clear') + Artisan::call('view:clear'),
-        'create-admin' => Artisan::call('make:admin'),
-        default => abort(404),
-    };
+
+    $actions = [
+        'migrate' => fn () => Artisan::call('migrate', ['--force' => true]),
+        'import-plombiers' => fn () => Artisan::call('import:google-places'),
+        'import-reviews' => fn () => Artisan::call('import:google-reviews', ['--limit' => 50]),
+        'scrape-emails' => fn () => Artisan::call('scrape:emails', ['--limit' => 50]),
+        'seo-plumbers' => fn () => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50]),
+        'seo-plumbers-force' => fn () => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50, '--force' => true]),
+        'seo-departments' => fn () => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102]),
+        'seo-departments-force' => fn () => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102, '--force' => true]),
+        'seo-cities' => fn () => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50]),
+        'seo-cities-force' => fn () => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50, '--force' => true]),
+        'review-summary' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
+        'review-summary-force' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50, '--force' => true]),
+        'cache-clear' => function () {
+            Artisan::call('cache:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+        },
+        'create-admin' => fn () => Artisan::call('make:admin'),
+    ];
+
+    if (! isset($actions[$action])) {
+        abort(404);
+    }
+
+    $actions[$action]();
 
     return '<pre>'.Artisan::output().'</pre>';
 });
