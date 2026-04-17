@@ -75,4 +75,82 @@ Alpine.data('villeAutocomplete', () => ({
     },
 }));
 
+Alpine.data('chatbot', () => ({
+    open: false,
+    messages: [],
+    input: '',
+    loading: false,
+    city: '',
+    postalCode: '',
+    started: false,
+
+    toggle() {
+        this.open = !this.open;
+        if (this.open && !this.started) {
+            this.started = true;
+            this.messages.push({
+                role: 'assistant',
+                content: 'Bonjour ! Je suis l\'assistant Plombier SOS. Décrivez-moi votre problème de plomberie et je vous aiderai à trouver une solution.',
+            });
+        }
+    },
+
+    async send() {
+        const text = this.input.trim();
+        if (!text || this.loading) return;
+
+        this.messages.push({ role: 'user', content: text });
+        this.input = '';
+        this.loading = true;
+
+        // Extract city/postal code from conversation
+        const cpMatch = text.match(/\b(\d{5})\b/);
+        if (cpMatch) this.postalCode = cpMatch[1];
+
+        this.$nextTick(() => this.scrollToBottom());
+
+        try {
+            const token = document.querySelector('meta[name="csrf-token"]')?.content;
+            const apiMessages = this.messages.filter(m => m.role !== 'system');
+
+            const res = await fetch('/ajax/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: apiMessages,
+                    city: this.city,
+                    postal_code: this.postalCode,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.message) {
+                this.messages.push({ role: 'assistant', content: data.message });
+            } else {
+                this.messages.push({ role: 'assistant', content: data.error || 'Désolé, une erreur est survenue.' });
+            }
+        } catch (e) {
+            this.messages.push({ role: 'assistant', content: 'Désolé, le service est temporairement indisponible.' });
+        }
+
+        this.loading = false;
+        this.$nextTick(() => this.scrollToBottom());
+    },
+
+    scrollToBottom() {
+        const container = this.$refs.messages;
+        if (container) container.scrollTop = container.scrollHeight;
+    },
+
+    formatMessage(content) {
+        // Convert markdown links [text](url) to HTML
+        return content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800">$1</a>');
+    },
+}));
+
 Alpine.start();

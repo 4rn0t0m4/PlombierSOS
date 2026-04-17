@@ -136,6 +136,57 @@
             </div>
         </div>
     </footer>
+    {{-- Chatbot IA --}}
+    <div x-data="chatbot()" class="fixed bottom-6 right-6 z-50">
+        {{-- Chat window --}}
+        <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4" class="mb-4 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border flex flex-col" style="height: 480px;">
+            {{-- Header --}}
+            <div class="bg-blue-900 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+                    <span class="font-semibold text-sm">Assistant Plombier SOS</span>
+                </div>
+                <button @click="toggle()" class="text-white/70 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- Messages --}}
+            <div x-ref="messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <template x-for="(msg, index) in messages" :key="index">
+                    <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                        <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-2xl rounded-br-md' : 'bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md'" class="px-4 py-2 max-w-[85%] text-sm" x-html="formatMessage(msg.content)">
+                        </div>
+                    </div>
+                </template>
+                <div x-show="loading" class="flex justify-start">
+                    <div class="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2 text-sm text-gray-400">
+                        <span class="inline-flex gap-1">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Input --}}
+            <div class="border-t p-3">
+                <form @submit.prevent="send()" class="flex gap-2">
+                    <input x-model="input" type="text" placeholder="Décrivez votre problème..." class="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :disabled="loading">
+                    <button type="submit" :disabled="loading || !input.trim()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-xl px-3 py-2 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Floating button --}}
+        <button @click="toggle()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition hover:scale-110" :class="open ? 'hidden' : ''">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+        </button>
+    </div>
+
     @stack('jsonld')
 </body>
 </html>

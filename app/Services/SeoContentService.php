@@ -85,6 +85,33 @@ PROMPT;
         return $this->call($prompt);
     }
 
+    public function generateReviewsSummary(array $data): ?string
+    {
+        $reviews = $data['reviews'];
+        $reviewsText = collect($reviews)->map(fn ($r) => "- {$r['author']} ({$r['rating']}/5) : {$r['text']}")->implode("\n");
+
+        $prompt = <<<PROMPT
+Rédige un résumé concis (2-3 phrases, texte brut sans HTML) des avis clients pour ce professionnel de la plomberie.
+
+Règles strictes :
+- Synthétise les points forts et faibles mentionnés par les clients
+- Mentionne la tendance générale (satisfaction, qualité, ponctualité, tarifs)
+- Si tous les avis sont positifs, dis-le simplement sans exagérer
+- Si des critiques reviennent, mentionne-les honnêtement
+- N'invente rien, base-toi uniquement sur les avis fournis
+- Pas de formule type "en résumé" ou "globalement"
+- Commence directement par le constat
+
+Professionnel : {$data['title']} ({$data['city']})
+Note Google : {$data['rating']}/5
+
+Avis :
+{$reviewsText}
+PROMPT;
+
+        return $this->call($prompt);
+    }
+
     private function call(string $prompt): ?string
     {
         if (! $this->apiKey) {

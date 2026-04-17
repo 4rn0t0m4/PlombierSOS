@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 class GenerateSeoContent extends Command
 {
     protected $signature = 'seo:generate
-        {type : Type de contenu (plumber, department, city)}
+        {type : Type de contenu (plumber, department, city, review-summary)}
         {--limit=10 : Nombre d\'éléments à traiter}
         {--force : Regénérer même si du contenu existe déjà}';
 
@@ -27,6 +27,7 @@ class GenerateSeoContent extends Command
             'plumber' => $this->generatePlumbers($seo, $limit, $force),
             'department' => $this->generateDepartments($seo, $limit, $force),
             'city' => $this->generateCities($seo, $limit, $force),
+            'review-summary' => $this->generateReviewsSummaries($seo, $limit, $force),
             default => $this->error("Type invalide : {$type}") ?? self::FAILURE,
         };
     }
@@ -94,6 +95,46 @@ class GenerateSeoContent extends Command
             if ($content) {
                 $dept->update(['seo_content' => $content]);
                 $this->info('    OK');
+            } else {
+                $this->warn('    Erreur de génération');
+            }
+
+            usleep(500000);
+        }
+
+        return self::SUCCESS;
+    }
+
+    private function generateReviewsSummaries(SeoContentService $seo, int $limit, bool $force): int
+    {
+        $query = Plumber::active()
+            ->whereNotNull('google_reviews')
+            ->where('google_reviews', '!=', '[]');
+        if (! $force) {
+            $query->whereNull('reviews_summary');
+        }
+
+        $plumbers = $query->limit($limit)->get();
+        $this->info("{$plumbers->count()} plombier(s) avec avis à traiter.");
+
+        foreach ($plumbers as $plumber) {
+            $reviews = $plumber->google_reviews;
+            if (empty($reviews)) {
+                continue;
+            }
+
+            $this->line("  {$plumber->title} ({$plumber->city}) — {$plumber->google_reviews_count} avis...");
+
+            $summary = $seo->generateReviewsSummary([
+                'title' => $plumber->title,
+                'city' => $plumber->city,
+                'rating' => $plumber->google_rating,
+                'reviews' => $reviews,
+            ]);
+
+            if ($summary) {
+                $plumber->update(['reviews_summary' => $summary]);
+                $this->info("    OK : $summary");
             } else {
                 $this->warn('    Erreur de génération');
             }

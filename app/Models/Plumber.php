@@ -30,7 +30,7 @@ class Plumber extends Model
         'address', 'postal_code', 'city', 'department', 'city_id', 'latitude', 'longitude',
         'service_radius', 'description', 'seo_content', 'opening_hours', 'pricing', 'siret', 'photo',
         'emergency_24h', 'free_quote', 'rge_certified', 'specialties',
-        'average_rating', 'reviews_count', 'google_rating', 'google_reviews_count', 'google_reviews',
+        'average_rating', 'reviews_count', 'google_rating', 'google_reviews_count', 'google_reviews', 'reviews_summary',
         'is_active', 'city_ranking',
     ];
 

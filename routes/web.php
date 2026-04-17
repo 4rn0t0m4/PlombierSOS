@@ -62,6 +62,9 @@ Route::get('/ajax/villes', VilleAutocompleteController::class)->name('villes.aut
 // Phone reveal
 Route::post('/ajax/phone', [PhoneController::class, 'reveal'])->name('phone.reveal');
 
+// Chatbot
+Route::post('/ajax/chatbot', [\App\Http\Controllers\ChatbotController::class, 'chat'])->middleware('throttle:30,1')->name('chatbot.chat');
+
 // Reviews
 Route::post('/avis', [AvisController::class, 'store'])->middleware('throttle:5,1')->name('avis.store');
 Route::get('/avis/confirmer/{token}', [AvisController::class, 'confirmerEmail'])->name('avis.confirmer');
