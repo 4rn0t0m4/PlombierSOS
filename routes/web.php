@@ -38,6 +38,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'seo-cities-force' => Artisan::call('seo:generate', ['type' => 'city', '--limit' => 50, '--force' => true]),
         'review-summary' => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]),
         'review-summary-force' => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50, '--force' => true]),
+        'cache-clear' => Artisan::call('cache:clear') + Artisan::call('route:clear') + Artisan::call('view:clear'),
         'create-admin' => Artisan::call('make:admin'),
         default => abort(404),
     };
