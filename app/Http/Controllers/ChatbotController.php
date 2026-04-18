@@ -46,15 +46,15 @@ class ChatbotController extends Controller
                 $postalCode = $cpMatch[1];
             }
 
-            // Detect city name from database
+            // Detect city name from database (exact match first, then prefix)
             if (! $city && ! $postalCode) {
-                $words = preg_split('/[\s,.\-\']+/', $allUserText);
-                for ($i = count($words) - 1; $i >= 0; $i--) {
-                    $candidate = $words[$i];
+                $words = preg_split('/[\s,.\-\']+/', mb_strtolower($allUserText));
+                // Try exact match first
+                foreach (array_reverse($words) as $candidate) {
                     if (mb_strlen($candidate) < 3) {
                         continue;
                     }
-                    $found = City::where('name', 'LIKE', $candidate.'%')
+                    $found = City::whereRaw('LOWER(name) = ?', [$candidate])
                         ->where('population', '>', 0)
                         ->orderByDesc('population')
                         ->first();
@@ -62,6 +62,18 @@ class ChatbotController extends Controller
                         $city = $found->name;
                         $postalCode = $found->postal_code;
                         break;
+                    }
+                }
+                // Try multi-word city names (e.g. "Mont de Marsan")
+                if (! $city) {
+                    $cleanText = mb_strtolower($allUserText);
+                    $found = City::where('population', '>', 5000)
+                        ->orderByDesc('population')
+                        ->get(['name', 'postal_code'])
+                        ->first(fn ($c) => str_contains($cleanText, mb_strtolower($c->name)));
+                    if ($found) {
+                        $city = $found->name;
+                        $postalCode = $found->postal_code;
                     }
                 }
             }
@@ -105,8 +117,10 @@ class ChatbotController extends Controller
             }
         }
 
+        $locationInfo = $city ? "Localisation détectée : {$city}" . ($postalCode ? " ({$postalCode})" : '') : 'Localisation non détectée';
+
         $system = <<<SYSTEM
-Tu es l'assistant de Plombier SOS, un annuaire en ligne de plombiers en France.
+Tu es l'assistant de Plombier SOS (www.plombier-sos.fr), un annuaire en ligne de plombiers en France.
 
 Ton rôle :
 1. Aider l'utilisateur à diagnostiquer son problème de plomberie
@@ -114,14 +128,18 @@ Ton rôle :
 3. Donner des conseils de premiers gestes (couper l'eau, etc.)
 4. Recommander les plombiers disponibles dans sa zone
 
+{$locationInfo}
+
 Règles :
 - Réponds en français, de manière concise (2-4 phrases max par réponse)
 - Pose UNE question à la fois pour comprendre le problème
-- Si l'utilisateur n'a pas donné sa ville, demande-la
-- Quand tu recommandes un plombier, donne son nom et un lien au format [Nom du plombier](URL)
+- Si l'utilisateur n'a pas donné sa ville ou son code postal, demande-le
+- Quand tu recommandes un plombier, donne son nom et un lien cliquable au format [Nom du plombier](URL)
 - Ne donne JAMAIS de diagnostic technique définitif, tu n'es pas sur place
 - En cas d'urgence (fuite importante, inondation, odeur de gaz), conseille d'abord de couper l'arrivée d'eau/gaz et d'appeler les urgences si nécessaire
 - Sois chaleureux mais professionnel
+- N'invente JAMAIS de plombier. Utilise UNIQUEMENT les plombiers listés ci-dessous. Si aucun plombier n'est listé, propose à l'utilisateur de chercher sur le site www.plombier-sos.fr
+- Ne dis pas que tu as des plombiers dans un autre département que celui demandé
 {$plumbersContext}
 SYSTEM;
 
