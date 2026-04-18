@@ -127,6 +127,66 @@
                     </div>
                 </div>
 
+                {{-- Réclamation de fiche --}}
+                <div class="mt-6" x-data="{ showClaim: false, claimSent: false, claimSending: false, claimError: '' }">
+                    <button @click="showClaim = !showClaim" class="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                        Vous êtes le propriétaire de cet établissement ?
+                    </button>
+                    <div x-show="showClaim" x-cloak class="mt-3 bg-gray-50 border rounded-lg p-5">
+                        <div x-show="claimSent" class="text-center py-4">
+                            <p class="text-green-600 font-semibold">Demande envoyée !</p>
+                            <p class="text-sm text-gray-500 mt-1">Nous reviendrons vers vous rapidement.</p>
+                        </div>
+                        <form x-show="!claimSent" @submit.prevent="
+                            claimSending = true; claimError = '';
+                            const fd = new FormData($el);
+                            fetch('{{ route('claim.store') }}', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+                                .then(r => { if (r.ok) { claimSent = true; } else { return r.json().then(d => { claimError = d.message || 'Erreur'; }); } })
+                                .catch(() => { claimError = 'Erreur réseau.'; })
+                                .finally(() => { claimSending = false; });
+                        ">
+                            @csrf
+                            <input type="hidden" name="plumber_id" value="{{ $plumber->id }}">
+                            <h3 class="font-semibold mb-3">Réclamer cette fiche</h3>
+                            <p class="text-sm text-gray-600 mb-4">Remplissez ce formulaire pour prendre la main sur votre fiche et mettre à jour vos informations.</p>
+                            <div class="grid sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Nom complet *</label>
+                                    <input type="text" name="name" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Email professionnel *</label>
+                                    <input type="email" name="email" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                                </div>
+                            </div>
+                            <div class="grid sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Téléphone *</label>
+                                    <input type="tel" name="phone" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Votre rôle *</label>
+                                    <select name="role" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                                        <option value="owner">Gérant / Propriétaire</option>
+                                        <option value="manager">Responsable</option>
+                                        <option value="employee">Employé</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium mb-1">Message (optionnel)</label>
+                                <textarea name="message" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Informations complémentaires, modifications souhaitées..."></textarea>
+                            </div>
+                            <p x-show="claimError" x-text="claimError" class="text-red-500 text-sm mb-3" x-cloak></p>
+                            <button type="submit" :disabled="claimSending" class="bg-blue-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-blue-800 disabled:opacity-50 cursor-pointer">
+                                <span x-show="!claimSending">Envoyer ma demande</span>
+                                <span x-show="claimSending">Envoi...</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 @if($plumber->seo_content || $plumber->description)
                     <div class="mt-8">
                         <h2 class="text-xl font-semibold mb-3">Présentation</h2>

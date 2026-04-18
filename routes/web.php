@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvisController;
+use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\DepartementController;
 use App\Http\Controllers\HomeController;
@@ -115,6 +116,9 @@ Route::post('/ajax/phone', [PhoneController::class, 'reveal'])->name('phone.reve
 
 // Chatbot
 Route::post('/ajax/chatbot', [\App\Http\Controllers\ChatbotController::class, 'chat'])->middleware('throttle:30,1')->name('chatbot.chat');
+
+// Claim listing
+Route::post('/ajax/claim', [ClaimController::class, 'store'])->middleware('throttle:3,1')->name('claim.store');
 
 // Reviews
 Route::post('/avis', [AvisController::class, 'store'])->middleware('throttle:5,1')->name('avis.store');

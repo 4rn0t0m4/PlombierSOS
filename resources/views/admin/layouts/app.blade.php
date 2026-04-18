@@ -17,6 +17,7 @@
                 <a href="{{ route('admin.avis.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.avis.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Avis</a>
                 <a href="{{ route('admin.demandes.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.demandes.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Demandes</a>
                 <a href="{{ route('admin.messages.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.messages.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Messages</a>
+                <a href="{{ route('admin.reclamations.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.reclamations.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Réclamations</a>
                 <a href="{{ route('admin.stats') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.stats') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Statistiques</a>
                 <div class="border-t border-blue-800 my-4"></div>
                 <a href="{{ route('home') }}" class="block px-3 py-2 rounded hover:bg-blue-800 text-blue-300">← Retour au site</a>

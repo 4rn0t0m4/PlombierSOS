@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DemandeController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\PlombierController;
+use App\Http\Controllers\Admin\ReclamationController;
 use App\Http\Controllers\Admin\StatsController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,3 +32,7 @@ Route::delete('demandes/{demande}', [DemandeController::class, 'destroy'])->name
 // Messages
 Route::get('messages', [MessageController::class, 'index'])->name('messages.index');
 Route::delete('messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+// Réclamations de fiches
+Route::get('reclamations', [ReclamationController::class, 'index'])->name('reclamations.index');
+Route::post('reclamations/{claim}', [ReclamationController::class, 'update'])->name('reclamations.update');
