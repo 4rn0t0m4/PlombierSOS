@@ -32,9 +32,7 @@ class ReclamationController extends Controller
         $claim->update($validated);
 
         $statusLabel = $validated['status'] === 'approved' ? 'approuvée' : 'refusée';
-        $loginInfo = '';
 
-        // If approved, create/link user account and attach to plumber
         if ($validated['status'] === 'approved') {
             $user = User::where('email', $claim->email)->first();
 
@@ -44,39 +42,40 @@ class ReclamationController extends Controller
                     'username' => Str::slug($claim->name, '_'),
                     'first_name' => $claim->name,
                     'phone' => $claim->phone,
-                    'password' => Str::random(32), // Random password, user will set their own
+                    'password' => Str::random(32),
                 ]);
             }
 
-            // Attach plumber to user if not already linked
             if (! $user->plumbers()->where('plumber_id', $claim->plumber_id)->exists()) {
                 $user->plumbers()->attach($claim->plumber_id);
             }
 
-            // Generate password reset link
             $token = Password::createToken($user);
             $resetUrl = url("/reinitialiser-mot-de-passe/{$token}?email=".urlencode($user->email));
 
-            $loginInfo = "\n\nVotre espace professionnel est maintenant accessible.\n"
-                ."Cliquez sur le lien ci-dessous pour créer votre mot de passe et accéder à votre espace :\n\n"
-                ."{$resetUrl}\n\n"
-                ."Ce lien est valable 60 minutes.\n";
-        }
-
-        Mail::raw(
-            "Bonjour {$claim->name},\n\n"
-            ."Votre demande de réclamation pour la fiche \"{$claim->plumber->title}\" a été {$statusLabel}.\n\n"
-            .($validated['admin_notes'] ? "Commentaire : {$validated['admin_notes']}\n\n" : '')
-            .$loginInfo
-            ."\nCordialement,\nL'équipe Plombier SOS",
-            function ($msg) use ($claim, $statusLabel) {
+            Mail::send('emails.claim-approved', [
+                'name' => $claim->name,
+                'plumberName' => $claim->plumber->title,
+                'email' => $claim->email,
+                'resetUrl' => $resetUrl,
+                'adminNotes' => $validated['admin_notes'],
+            ], function ($msg) use ($claim) {
                 $msg->to($claim->email)
-                    ->subject("Plombier SOS - Réclamation {$statusLabel}");
-            }
-        );
+                    ->subject('Plombier SOS - Votre espace professionnel est prêt');
+            });
+        } else {
+            Mail::send('emails.claim-rejected', [
+                'name' => $claim->name,
+                'plumberName' => $claim->plumber->title,
+                'adminNotes' => $validated['admin_notes'],
+            ], function ($msg) use ($claim) {
+                $msg->to($claim->email)
+                    ->subject('Plombier SOS - Réclamation refusée');
+            });
+        }
 
         return redirect()->route('admin.reclamations.index')
             ->with('success', "Réclamation {$statusLabel}."
-                .($validated['status'] === 'approved' ? ' Compte pro créé/lié, email avec lien envoyé.' : ''));
+                .($validated['status'] === 'approved' ? ' Compte pro créé/lié, email envoyé.' : ''));
     }
 }

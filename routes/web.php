@@ -37,18 +37,16 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
             $token = \Illuminate\Support\Facades\Password::createToken($user);
             $resetUrl = url("/reinitialiser-mot-de-passe/{$token}?email=".urlencode($user->email));
 
-            \Illuminate\Support\Facades\Mail::raw(
-                "Bonjour {$claim->name},\n\n"
-                ."Votre demande de réclamation pour la fiche \"{$claim->plumber->title}\" a été approuvée.\n\n"
-                ."Cliquez sur le lien ci-dessous pour créer votre mot de passe et accéder à votre espace professionnel :\n\n"
-                ."{$resetUrl}\n\n"
-                ."Ce lien est valable 60 minutes.\n\n"
-                ."Cordialement,\nL'équipe Plombier SOS",
-                function ($msg) use ($claim) {
-                    $msg->to($claim->email)
-                        ->subject('Plombier SOS - Votre espace professionnel est prêt');
-                }
-            );
+            \Illuminate\Support\Facades\Mail::send('emails.claim-approved', [
+                'name' => $claim->name,
+                'plumberName' => $claim->plumber->title,
+                'email' => $claim->email,
+                'resetUrl' => $resetUrl,
+                'adminNotes' => null,
+            ], function ($msg) use ($claim) {
+                $msg->to($claim->email)
+                    ->subject('Plombier SOS - Votre espace professionnel est prêt');
+            });
             echo "Email envoyé à {$claim->email} avec lien de création de mot de passe";
         },
         'test-mail' => function () {
