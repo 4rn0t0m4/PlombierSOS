@@ -107,7 +107,10 @@ Alpine.data('chatbot', () => ({
         const cpMatch = text.match(/\b(\d{5})\b/);
         if (cpMatch) this.postalCode = cpMatch[1];
 
-        this.$nextTick(() => this.scrollToBottom());
+        this.$nextTick(() => {
+            this.scrollToBottom();
+            this.$refs.chatInput?.focus();
+        });
 
         try {
             const token = document.querySelector('meta[name="csrf-token"]')?.content;
