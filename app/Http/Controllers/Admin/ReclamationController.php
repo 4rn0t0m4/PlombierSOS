@@ -7,6 +7,7 @@ use App\Models\ClaimRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class ReclamationController extends Controller
@@ -36,16 +37,14 @@ class ReclamationController extends Controller
         // If approved, create/link user account and attach to plumber
         if ($validated['status'] === 'approved') {
             $user = User::where('email', $claim->email)->first();
-            $password = null;
 
             if (! $user) {
-                $password = Str::random(10);
                 $user = User::create([
                     'email' => $claim->email,
                     'username' => Str::slug($claim->name, '_'),
                     'first_name' => $claim->name,
                     'phone' => $claim->phone,
-                    'password' => $password,
+                    'password' => Str::random(32), // Random password, user will set their own
                 ]);
             }
 
@@ -54,15 +53,14 @@ class ReclamationController extends Controller
                 $user->plumbers()->attach($claim->plumber_id);
             }
 
-            $loginInfo = "\n\nVotre espace professionnel est maintenant accessible :\n"
-                ."URL : ".url('/pro')."\n"
-                ."Email : {$claim->email}\n";
-            if ($password) {
-                $loginInfo .= "Mot de passe : {$password}\n"
-                    ."(Pensez à le changer après votre première connexion)\n";
-            } else {
-                $loginInfo .= "(Utilisez votre mot de passe habituel)\n";
-            }
+            // Generate password reset link
+            $token = Password::createToken($user);
+            $resetUrl = url("/reinitialiser-mot-de-passe/{$token}?email=".urlencode($user->email));
+
+            $loginInfo = "\n\nVotre espace professionnel est maintenant accessible.\n"
+                ."Cliquez sur le lien ci-dessous pour créer votre mot de passe et accéder à votre espace :\n\n"
+                ."{$resetUrl}\n\n"
+                ."Ce lien est valable 60 minutes.\n";
         }
 
         Mail::raw(
@@ -79,6 +77,6 @@ class ReclamationController extends Controller
 
         return redirect()->route('admin.reclamations.index')
             ->with('success', "Réclamation {$statusLabel}."
-                .($validated['status'] === 'approved' ? ' Compte pro créé/lié.' : ''));
+                .($validated['status'] === 'approved' ? ' Compte pro créé/lié, email avec lien envoyé.' : ''));
     }
 }

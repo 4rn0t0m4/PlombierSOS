@@ -34,26 +34,22 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
             $user = \App\Models\User::where('email', $claim->email)->first();
             if (! $user) { echo 'Utilisateur non trouvé'; return; }
 
-            // Reset password and send
-            $password = \Illuminate\Support\Str::random(10);
-            $user->update(['password' => $password]);
+            $token = \Illuminate\Support\Facades\Password::createToken($user);
+            $resetUrl = url("/reinitialiser-mot-de-passe/{$token}?email=".urlencode($user->email));
 
             \Illuminate\Support\Facades\Mail::raw(
                 "Bonjour {$claim->name},\n\n"
                 ."Votre demande de réclamation pour la fiche \"{$claim->plumber->title}\" a été approuvée.\n\n"
-                ."Votre espace professionnel est maintenant accessible :\n"
-                ."URL : ".url('/pro')."\n"
-                ."Connexion : ".url('/connexion')."\n"
-                ."Email : {$claim->email}\n"
-                ."Mot de passe : {$password}\n"
-                ."(Pensez à le changer après votre première connexion)\n\n"
+                ."Cliquez sur le lien ci-dessous pour créer votre mot de passe et accéder à votre espace professionnel :\n\n"
+                ."{$resetUrl}\n\n"
+                ."Ce lien est valable 60 minutes.\n\n"
                 ."Cordialement,\nL'équipe Plombier SOS",
                 function ($msg) use ($claim) {
                     $msg->to($claim->email)
                         ->subject('Plombier SOS - Votre espace professionnel est prêt');
                 }
             );
-            echo "Email envoyé à {$claim->email} avec nouveau mot de passe";
+            echo "Email envoyé à {$claim->email} avec lien de création de mot de passe";
         },
         'test-mail' => function () {
             \Illuminate\Support\Facades\Mail::raw('Test email depuis Plombier SOS - '.now(), function ($msg) {
