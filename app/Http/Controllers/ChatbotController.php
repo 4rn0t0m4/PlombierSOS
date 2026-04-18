@@ -46,40 +46,29 @@ class ChatbotController extends Controller
                 $postalCode = $cpMatch[1];
             }
 
-            // Detect city name from database (exact match first, then prefix)
+            // Detect city name from database
             if (! $city && ! $postalCode) {
-                $words = preg_split('/[\s,.\-\']+/', mb_strtolower($allUserText));
-                // Try exact match first
-                foreach (array_reverse($words) as $candidate) {
-                    if (mb_strlen($candidate) < 3) {
-                        continue;
-                    }
-                    $found = City::whereRaw('LOWER(name) = ?', [$candidate])
-                        ->where('population', '>', 0)
-                        ->orderByDesc('population')
-                        ->first();
-                    if ($found) {
-                        $city = $found->name;
-                        $postalCode = $found->postal_code;
-                        break;
-                    }
-                }
-                // Try multi-word city names (e.g. "Mont-de-Marsan", "Saint-Étienne")
-                if (! $city) {
-                    // Normalize: remove dashes/hyphens, lowercase
-                    $cleanText = str_replace(['-', "'", "\xe2\x80\x99"], ' ', mb_strtolower($allUserText));
-                    $found = City::where('population', '>', 2000)
-                        ->orderByDesc('population')
-                        ->limit(500)
-                        ->get(['name', 'postal_code'])
-                        ->first(function ($c) use ($cleanText) {
-                            $normalizedName = str_replace(['-', "'", "\xe2\x80\x99"], ' ', mb_strtolower($c->name));
+                // Normalize text: replace dashes/apostrophes with spaces
+                $normalizedText = str_replace(['-', "'", "\xe2\x80\x99"], ' ', mb_strtolower($allUserText));
+                $words = preg_split('/[\s,.!?]+/', $normalizedText);
+                $words = array_values(array_filter($words, fn ($w) => mb_strlen($w) >= 2));
 
-                            return str_contains($cleanText, $normalizedName);
-                        });
-                    if ($found) {
-                        $city = $found->name;
-                        $postalCode = $found->postal_code;
+                // Try multi-word combinations first (longest match wins), then single words
+                for ($len = min(4, count($words)); $len >= 1; $len--) {
+                    for ($i = count($words) - $len; $i >= 0; $i--) {
+                        $candidate = implode(' ', array_slice($words, $i, $len));
+                        if (mb_strlen($candidate) < 3) {
+                            continue;
+                        }
+                        // Search with normalized name (dashes replaced by spaces)
+                        $found = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) = ?", [$candidate])
+                            ->orderByDesc('population')
+                            ->first();
+                        if ($found) {
+                            $city = $found->name;
+                            $postalCode = $found->postal_code;
+                            break 2;
+                        }
                     }
                 }
             }
