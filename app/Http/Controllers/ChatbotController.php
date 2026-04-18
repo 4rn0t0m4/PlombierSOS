@@ -54,29 +54,13 @@ class ChatbotController extends Controller
                 $words = array_values(array_filter($words, fn ($w) => mb_strlen($w) >= 2));
 
                 // Try multi-word combinations first (longest match wins), then single words
-                // Pass 1: exact match
                 for ($len = min(4, count($words)); $len >= 1; $len--) {
                     for ($i = count($words) - $len; $i >= 0; $i--) {
                         $candidate = implode(' ', array_slice($words, $i, $len));
                         if (mb_strlen($candidate) < 3) {
                             continue;
                         }
-                        $found = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) = ?", [$candidate])
-                            ->orderByDesc('population')
-                            ->first();
-                        if ($found) {
-                            $city = $found->name;
-                            $postalCode = $found->postal_code;
-                            break 2;
-                        }
-                    }
-                }
-                // Pass 2: prefix match (e.g. "hérouville" matches "Hérouville Saint Clair")
-                if (! $city) {
-                    foreach (array_reverse($words) as $candidate) {
-                        if (mb_strlen($candidate) < 4) {
-                            continue;
-                        }
+                        // Search exact match + prefix matches together
                         $matches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.'%'])
                             ->orderByDesc('population')
                             ->limit(5)
@@ -84,12 +68,10 @@ class ChatbotController extends Controller
                         if ($matches->count() === 1) {
                             $city = $matches->first()->name;
                             $postalCode = $matches->first()->postal_code;
+                            break 2;
                         } elseif ($matches->count() > 1) {
-                            // Multiple matches: let the chatbot ask which one
-                            $ambiguousCities = $matches->pluck('name')->implode(', ');
-                        }
-                        if ($city || ! empty($ambiguousCities)) {
-                            break;
+                            $ambiguousCities = $matches->map(fn ($c) => "{$c->name} ({$c->postal_code})")->implode(', ');
+                            break 2;
                         }
                     }
                 }
