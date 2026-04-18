@@ -28,6 +28,19 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     }
 
     $actions = [
+        'debug-claims' => function () {
+            $claims = \App\Models\ClaimRequest::with('plumber')->latest()->limit(5)->get();
+            foreach ($claims as $c) {
+                echo "#{$c->id} {$c->name} ({$c->email}) → {$c->plumber->title} — {$c->status}\n";
+            }
+            $users = \App\Models\User::has('plumbers')->with('plumbers')->get();
+            echo "\nUtilisateurs pro:\n";
+            foreach ($users as $u) {
+                echo "- {$u->email} → ".implode(', ', $u->plumbers->pluck('title')->toArray())."\n";
+            }
+            echo "\nMail driver: ".config('mail.default')."\n";
+            echo "Mail from: ".config('mail.from.address')."\n";
+        },
         'debug-plumbers' => function () {
             $dept = request()->query('dept', '14');
             $q = request()->query('q', '');
