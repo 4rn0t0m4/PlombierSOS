@@ -145,6 +145,16 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/deconnexion', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Espace Pro
+Route::middleware(['auth', \App\Http\Middleware\ProMiddleware::class])
+    ->prefix('pro')
+    ->name('pro.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProController::class, 'dashboard'])->name('dashboard');
+        Route::get('/{plumber}/edit', [\App\Http\Controllers\ProController::class, 'edit'])->name('edit');
+        Route::put('/{plumber}', [\App\Http\Controllers\ProController::class, 'update'])->name('update');
+    });
+
 // Admin (must be before catch-all routes)
 Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->prefix('admin')
@@ -156,7 +166,7 @@ Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->
 
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-$reserved = '^(?!admin$|ajax$|deploy$|avis$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
+$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
 Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', $reserved);

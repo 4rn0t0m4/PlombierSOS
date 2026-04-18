@@ -48,6 +48,9 @@
                         @if(auth()->user()->is_admin)
                             <a href="{{ route('admin.dashboard') }}" class="hover:text-red-300 hidden sm:inline">Admin</a>
                         @endif
+                        @if(auth()->user()->plumbers()->exists())
+                            <a href="{{ route('pro.dashboard') }}" class="hover:text-red-300 hidden sm:inline">Espace Pro</a>
+                        @endif
                         <a href="{{ route('logout') }}" class="hover:text-red-300 hidden sm:inline">Deconnexion</a>
                     @else
                         <a href="{{ route('login') }}" class="hover:text-red-300 hidden sm:inline">Connexion</a>
@@ -73,6 +76,9 @@
                     @auth
                         @if(auth()->user()->is_admin)
                             <a href="{{ route('admin.dashboard') }}" class="block py-2 hover:text-red-300">Admin</a>
+                        @endif
+                        @if(auth()->user()->plumbers()->exists())
+                            <a href="{{ route('pro.dashboard') }}" class="block py-2 hover:text-red-300">Espace Pro</a>
                         @endif
                         <a href="{{ route('logout') }}" class="block py-2 hover:text-red-300">Deconnexion</a>
                     @else
