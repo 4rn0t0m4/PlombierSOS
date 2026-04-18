@@ -64,13 +64,19 @@ class ChatbotController extends Controller
                         break;
                     }
                 }
-                // Try multi-word city names (e.g. "Mont de Marsan")
+                // Try multi-word city names (e.g. "Mont-de-Marsan", "Saint-Étienne")
                 if (! $city) {
-                    $cleanText = mb_strtolower($allUserText);
-                    $found = City::where('population', '>', 5000)
+                    // Normalize: remove dashes/hyphens, lowercase
+                    $cleanText = str_replace(['-', "'", "\xe2\x80\x99"], ' ', mb_strtolower($allUserText));
+                    $found = City::where('population', '>', 2000)
                         ->orderByDesc('population')
+                        ->limit(500)
                         ->get(['name', 'postal_code'])
-                        ->first(fn ($c) => str_contains($cleanText, mb_strtolower($c->name)));
+                        ->first(function ($c) use ($cleanText) {
+                            $normalizedName = str_replace(['-', "'", "\xe2\x80\x99"], ' ', mb_strtolower($c->name));
+
+                            return str_contains($cleanText, $normalizedName);
+                        });
                     if ($found) {
                         $city = $found->name;
                         $postalCode = $found->postal_code;
