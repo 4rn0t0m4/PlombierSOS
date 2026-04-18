@@ -18,6 +18,20 @@
         </div>
     </section>
 
+    {{-- Chatbot CTA --}}
+    <section class="bg-blue-50 border-b">
+        <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center gap-4">
+            <div class="text-4xl">&#x1F4AC;</div>
+            <div class="flex-1 text-center sm:text-left">
+                <h2 class="text-lg font-bold text-gray-900">Besoin d'aide pour diagnostiquer votre problème ?</h2>
+                <p class="text-sm text-gray-600">Notre assistant IA peut évaluer l'urgence de votre situation et vous recommander un plombier adapté près de chez vous.</p>
+            </div>
+            <button @click="$store.chatbot.requestOpen = true" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition whitespace-nowrap">
+                Parler à l'assistant
+            </button>
+        </div>
+    </section>
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         @if($plombiers->isNotEmpty())
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">

@@ -3,6 +3,7 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 Alpine.store('contactModal', { open: false });
+Alpine.store('chatbot', { requestOpen: false });
 
 Alpine.data('phoneReveal', (encoded, plombierId) => ({
     revealed: false,
@@ -83,6 +84,15 @@ Alpine.data('chatbot', () => ({
     city: '',
     postalCode: '',
     started: false,
+
+    init() {
+        this.$watch('$store.chatbot.requestOpen', (val) => {
+            if (val) {
+                this.$store.chatbot.requestOpen = false;
+                if (!this.open) this.toggle();
+            }
+        });
+    },
 
     toggle() {
         this.open = !this.open;
