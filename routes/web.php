@@ -27,6 +27,15 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     }
 
     $actions = [
+        'debug-plumbers' => function () {
+            $dept = request()->query('dept', '14');
+            $count = \App\Models\Plumber::active()->where('department', $dept)->count();
+            $sample = \App\Models\Plumber::active()->where('department', $dept)->limit(3)->get(['id', 'title', 'city', 'department', 'postal_code']);
+            $allDepts = \App\Models\Plumber::active()->selectRaw('department, count(*) as cnt')->groupBy('department')->orderBy('department')->pluck('cnt', 'department');
+            echo "Dept {$dept}: {$count} plombiers actifs\n";
+            echo "Sample: ".json_encode($sample, JSON_UNESCAPED_UNICODE)."\n";
+            echo "All depts: ".json_encode($allDepts, JSON_UNESCAPED_UNICODE)."\n";
+        },
         'migrate' => fn () => Artisan::call('migrate', ['--force' => true]),
         'import-plombiers' => fn () => Artisan::call('import:google-places'),
         'import-reviews' => fn () => Artisan::call('import:google-reviews', ['--limit' => 50]),
