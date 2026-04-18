@@ -60,18 +60,54 @@ class ChatbotController extends Controller
                         if (mb_strlen($candidate) < 3) {
                             continue;
                         }
-                        // Search exact match + prefix matches together
-                        $matches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.'%'])
+                        // First: exact matches only
+                        $exactMatches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) = ?", [$candidate])
                             ->orderByDesc('population')
                             ->limit(5)
                             ->get();
-                        if ($matches->count() === 1) {
-                            $city = $matches->first()->name;
-                            $postalCode = $matches->first()->postal_code;
+                        if ($exactMatches->count() === 1) {
+                            $city = $exactMatches->first()->name;
+                            $postalCode = $exactMatches->first()->postal_code;
                             break 2;
-                        } elseif ($matches->count() > 1) {
-                            $ambiguousCities = $matches->map(fn ($c) => "{$c->name} ({$c->postal_code})")->implode(', ');
+                        } elseif ($exactMatches->count() > 1) {
+                            $ambiguousCities = $exactMatches->map(fn ($c) => "{$c->name} ({$c->postal_code})")->implode(', ');
                             break 2;
+                        }
+                    }
+                }
+                // If exact match found, check if there are also "word-prefix" matches (e.g. "Hérouville" + "Hérouville Saint Clair")
+                // but exclude false positives like "Nice" matching "Nicey" (different word root)
+                if ($city) {
+                    $wordPrefixMatches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [mb_strtolower($city).' %'])
+                        ->orderByDesc('population')
+                        ->limit(4)
+                        ->get();
+                    if ($wordPrefixMatches->isNotEmpty()) {
+                        // There are compound names starting with the same word — ask to clarify
+                        $allMatches = collect([$city." ({$postalCode})"])
+                            ->merge($wordPrefixMatches->map(fn ($c) => "{$c->name} ({$c->postal_code})"));
+                        $ambiguousCities = $allMatches->implode(', ');
+                        $city = null;
+                        $postalCode = null;
+                    }
+                }
+                // If no exact match at all, try prefix match
+                if (! $city && empty($ambiguousCities)) {
+                    foreach (array_reverse($words) as $candidate) {
+                        if (mb_strlen($candidate) < 4) {
+                            continue;
+                        }
+                        $prefixMatches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.' %'])
+                            ->orderByDesc('population')
+                            ->limit(5)
+                            ->get();
+                        if ($prefixMatches->count() === 1) {
+                            $city = $prefixMatches->first()->name;
+                            $postalCode = $prefixMatches->first()->postal_code;
+                            break;
+                        } elseif ($prefixMatches->count() > 1) {
+                            $ambiguousCities = $prefixMatches->map(fn ($c) => "{$c->name} ({$c->postal_code})")->implode(', ');
+                            break;
                         }
                     }
                 }
