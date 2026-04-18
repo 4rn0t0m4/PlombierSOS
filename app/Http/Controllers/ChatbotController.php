@@ -54,13 +54,13 @@ class ChatbotController extends Controller
                 $words = array_values(array_filter($words, fn ($w) => mb_strlen($w) >= 2));
 
                 // Try multi-word combinations first (longest match wins), then single words
+                // Pass 1: exact match
                 for ($len = min(4, count($words)); $len >= 1; $len--) {
                     for ($i = count($words) - $len; $i >= 0; $i--) {
                         $candidate = implode(' ', array_slice($words, $i, $len));
                         if (mb_strlen($candidate) < 3) {
                             continue;
                         }
-                        // Search with normalized name (dashes replaced by spaces)
                         $found = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) = ?", [$candidate])
                             ->orderByDesc('population')
                             ->first();
@@ -68,6 +68,22 @@ class ChatbotController extends Controller
                             $city = $found->name;
                             $postalCode = $found->postal_code;
                             break 2;
+                        }
+                    }
+                }
+                // Pass 2: prefix match (e.g. "hérouville" matches "Hérouville Saint Clair")
+                if (! $city) {
+                    foreach (array_reverse($words) as $candidate) {
+                        if (mb_strlen($candidate) < 4) {
+                            continue;
+                        }
+                        $found = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.'%'])
+                            ->orderByDesc('population')
+                            ->first();
+                        if ($found) {
+                            $city = $found->name;
+                            $postalCode = $found->postal_code;
+                            break;
                         }
                     }
                 }
