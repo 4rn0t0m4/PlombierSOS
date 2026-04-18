@@ -77,12 +77,18 @@ class ChatbotController extends Controller
                         if (mb_strlen($candidate) < 4) {
                             continue;
                         }
-                        $found = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.'%'])
+                        $matches = City::whereRaw("LOWER(REPLACE(REPLACE(name, '-', ' '), \"'\", ' ')) LIKE ?", [$candidate.'%'])
                             ->orderByDesc('population')
-                            ->first();
-                        if ($found) {
-                            $city = $found->name;
-                            $postalCode = $found->postal_code;
+                            ->limit(5)
+                            ->get();
+                        if ($matches->count() === 1) {
+                            $city = $matches->first()->name;
+                            $postalCode = $matches->first()->postal_code;
+                        } elseif ($matches->count() > 1) {
+                            // Multiple matches: let the chatbot ask which one
+                            $ambiguousCities = $matches->pluck('name')->implode(', ');
+                        }
+                        if ($city || ! empty($ambiguousCities)) {
                             break;
                         }
                     }
@@ -132,7 +138,13 @@ class ChatbotController extends Controller
             }
         }
 
-        $locationInfo = $city ? "Localisation détectée : {$city}" . ($postalCode ? " ({$postalCode})" : '') : 'Localisation non détectée';
+        if (! empty($ambiguousCities)) {
+            $locationInfo = "L'utilisateur a mentionné une ville ambiguë. Plusieurs communes correspondent : {$ambiguousCities}. Demande-lui de préciser laquelle.";
+        } elseif ($city) {
+            $locationInfo = "Localisation détectée : {$city}".($postalCode ? " ({$postalCode})" : '');
+        } else {
+            $locationInfo = 'Localisation non détectée';
+        }
 
         $system = <<<SYSTEM
 Tu es l'assistant de Plombier SOS (www.plombier-sos.fr), un annuaire en ligne de plombiers en France.
