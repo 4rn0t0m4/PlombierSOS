@@ -28,6 +28,13 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
     }
 
     $actions = [
+        'test-mail' => function () {
+            \Illuminate\Support\Facades\Mail::raw('Test email depuis Plombier SOS - '.now(), function ($msg) {
+                $msg->to(request()->query('to', 'arnaudthomas.np@gmail.com'))
+                    ->subject('Plombier SOS - Test email');
+            });
+            echo "Email envoyé à ".request()->query('to', 'arnaudthomas.np@gmail.com');
+        },
         'debug-claims' => function () {
             $claims = \App\Models\ClaimRequest::with('plumber')->latest()->limit(5)->get();
             foreach ($claims as $c) {
