@@ -107,6 +107,16 @@ class ChatbotController extends Controller
             $debugInfo['plumbers_found'] = $plumbers->count();
             Log::info('Chatbot results', $debugInfo);
 
+            // Build a link to the city/department page
+            $cityModel = City::where('name', $city)->where('postal_code', $postalCode)->first();
+            $deptModel = $cityModel?->departmentRelation;
+            $pageUrl = '';
+            if ($deptModel && $cityModel) {
+                $pageUrl = url("/{$deptModel->slug}/{$cityModel->slug}");
+            } elseif ($deptModel) {
+                $pageUrl = url("/{$deptModel->slug}");
+            }
+
             if ($plumbers->isNotEmpty()) {
                 $plumbersContext = "\n\nPlombiers disponibles dans la zone :\n";
                 foreach ($plumbers as $p) {
@@ -117,6 +127,11 @@ class ChatbotController extends Controller
                     $plumbersContext .= " — URL : {$p->url}";
                     $plumbersContext .= "\n";
                 }
+                if ($pageUrl) {
+                    $plumbersContext .= "\nPage complète des plombiers : {$pageUrl}\n";
+                }
+            } elseif ($pageUrl) {
+                $plumbersContext .= "\n\nAucun plombier trouvé dans la base, mais propose ce lien vers la page de la ville : {$pageUrl}\n";
             }
         }
 
