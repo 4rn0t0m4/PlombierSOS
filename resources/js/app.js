@@ -146,6 +146,7 @@ Alpine.data('chatbot', () => ({
                 this.messages.push({ role: 'assistant', content: data.message });
                 if (data.city) this.city = data.city;
                 if (data.postal_code) this.postalCode = data.postal_code;
+                if (data.debug) console.log('Chatbot debug:', data.debug);
             } else {
                 this.messages.push({ role: 'assistant', content: data.error || 'Désolé, une erreur est survenue.' });
             }

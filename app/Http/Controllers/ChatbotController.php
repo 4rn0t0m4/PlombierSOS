@@ -98,11 +98,15 @@ class ChatbotController extends Controller
                 $query->where('city', 'LIKE', "$city%");
             }
 
-            Log::info('Chatbot search', ['city' => $city, 'postal_code' => $postalCode, 'deptPrefix' => $deptPrefix ?? null]);
+            $debugInfo = ['city' => $city, 'postal_code' => $postalCode, 'deptPrefix' => $deptPrefix ?? null];
+            Log::info('Chatbot search', $debugInfo);
 
             $plumbers = $query->orderByDesc('google_rating')
                 ->limit(5)
                 ->get(['title', 'slug', 'city', 'postal_code', 'phone', 'google_rating', 'google_reviews_count', 'emergency_24h', 'free_quote', 'type', 'department', 'city_id']);
+
+            $debugInfo['plumbers_found'] = $plumbers->count();
+            Log::info('Chatbot results', $debugInfo);
 
             if ($plumbers->isNotEmpty()) {
                 $plumbersContext = "\n\nPlombiers disponibles dans la zone :\n";
@@ -167,6 +171,7 @@ SYSTEM;
                     'message' => $text,
                     'city' => $city,
                     'postal_code' => $postalCode,
+                    'debug' => $debugInfo ?? null,
                 ]);
             }
 
