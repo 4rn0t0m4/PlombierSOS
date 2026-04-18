@@ -15,9 +15,23 @@
                 <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.dashboard') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Dashboard</a>
                 <a href="{{ route('admin.plombiers.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.plombiers.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Plombiers</a>
                 <a href="{{ route('admin.avis.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.avis.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Avis</a>
-                <a href="{{ route('admin.demandes.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.demandes.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Demandes</a>
+                @php
+                    $pendingDemandes = \App\Models\ServiceRequest::where('status', 'new')->count();
+                    $pendingClaims = \App\Models\ClaimRequest::where('status', 'pending')->count();
+                @endphp
+                <a href="{{ route('admin.demandes.index') }}" class="flex items-center justify-between px-3 py-2 rounded {{ request()->routeIs('admin.demandes.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">
+                    Demandes
+                    @if($pendingDemandes)
+                        <span class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $pendingDemandes }}</span>
+                    @endif
+                </a>
                 <a href="{{ route('admin.messages.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.messages.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Messages</a>
-                <a href="{{ route('admin.reclamations.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.reclamations.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Réclamations</a>
+                <a href="{{ route('admin.reclamations.index') }}" class="flex items-center justify-between px-3 py-2 rounded {{ request()->routeIs('admin.reclamations.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">
+                    Réclamations
+                    @if($pendingClaims)
+                        <span class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $pendingClaims }}</span>
+                    @endif
+                </a>
                 <a href="{{ route('admin.stats') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.stats') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Statistiques</a>
                 <div class="border-t border-blue-800 my-4"></div>
                 <a href="{{ route('home') }}" class="block px-3 py-2 rounded hover:bg-blue-800 text-blue-300">← Retour au site</a>
