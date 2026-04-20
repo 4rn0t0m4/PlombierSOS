@@ -2,6 +2,8 @@
     @push('head')
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key', env('GOOGLE_PLACES_API_KEY')) }}" async defer></script>
     @endpush
 
     <div class="max-w-7xl mx-auto px-4 py-8">
@@ -43,10 +45,7 @@
                 var deptCode = '{{ $department->number }}';
 
                 var map = L.map('dept-map', { scrollWheelZoom: false }).setView([{{ $department->latitude ?? 46.6 }}, {{ $department->longitude ?? 2.3 }}], 9);
-                L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://www.openstreetmap.fr">OSM France</a>',
-                    maxZoom: 20
-                }).addTo(map);
+                L.gridLayer.googleMutant({ type: 'roadmap', maxZoom: 20 }).addTo(map);
                 setTimeout(function () { map.invalidateSize(); }, 100);
 
                 // Load department boundary from france-geojson
