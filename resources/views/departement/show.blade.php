@@ -49,7 +49,7 @@
                 setTimeout(function () { map.invalidateSize(); }, 100);
 
                 // Load department boundary from france-geojson
-                var deptSlug = '{{ $department->number }}-{{ Str::slug($department->name) }}';
+                var deptSlug = '{{ $department->number }}-{{ strtolower($department->slug) }}';
                 var geoUrl = 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/' + deptSlug + '/departement-' + deptSlug + '.geojson';
                 fetch(geoUrl)
                     .then(function (r) { return r.json(); })
