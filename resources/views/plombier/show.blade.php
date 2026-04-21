@@ -5,8 +5,9 @@
     @if($plumber->latitude && $plumber->longitude)
         @push('head')
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
             <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js"></script>
-            <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key', env('GOOGLE_PLACES_API_KEY')) }}" async defer></script>
+            <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_PLACES_API_KEY') }}"></script>
         @endpush
     @endif
 
@@ -390,7 +391,6 @@
     </div>
 
     @if($plumber->latitude && $plumber->longitude)
-        <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var map = L.map('map', { scrollWheelZoom: false }).setView([{{ $plumber->latitude }}, {{ $plumber->longitude }}], 15);
