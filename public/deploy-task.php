@@ -14,8 +14,15 @@ $action = $_GET['action'] ?? '';
 $output = '';
 
 if (function_exists('opcache_reset')) {
-    opcache_reset();
-    $output .= "OPcache reset.\n";
+    try {
+        if (@opcache_reset()) {
+            $output .= "OPcache reset.\n";
+        } else {
+            $output .= "OPcache reset skipped (restricted or disabled).\n";
+        }
+    } catch (\Throwable $e) {
+        $output .= 'OPcache reset skipped: '.$e->getMessage()."\n";
+    }
 }
 
 Illuminate\Support\Facades\Artisan::call('cache:clear');
