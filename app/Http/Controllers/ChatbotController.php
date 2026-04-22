@@ -179,6 +179,30 @@ class ChatbotController extends Controller
             $locationInfo = 'Localisation non détectée';
         }
 
+        $hasPlumbers = $plumbersContext !== '';
+
+        if ($hasPlumbers) {
+            $recommendationBlock = <<<BLOCK
+## Plombiers disponibles
+
+Tu DOIS recommander UNIQUEMENT les plombiers listés ci-dessous. Format obligatoire : [Nom du plombier](URL).
+{$plumbersContext}
+BLOCK;
+        } else {
+            $recommendationBlock = <<<BLOCK
+## AUCUN PLOMBIER DISPONIBLE POUR LE MOMENT
+
+INTERDICTIONS ABSOLUES tant que l'utilisateur n'a pas donné sa ville ou son code postal :
+- NE cite AUCUN nom de plombier (même en exemple)
+- NE cite AUCUN nom de ville, village ou commune
+- NE cite AUCUN nom de département (ni Creuse, ni Paris, ni AUCUN autre)
+- NE cite AUCUN code postal
+- N'INVENTE JAMAIS de plombier. Aucune liste ne t'a été fournie, donc tu ne connais AUCUN plombier.
+
+À la place : pose UNE question pour avancer le diagnostic OU demande la ville/code postal de l'utilisateur.
+BLOCK;
+        }
+
         $system = <<<SYSTEM
 Tu es l'assistant de Plombier SOS (www.plombier-sos.fr), un annuaire en ligne de plombiers en France.
 
@@ -190,17 +214,15 @@ Ton rôle :
 
 {$locationInfo}
 
-Règles :
+Règles générales :
 - Réponds en français, de manière concise (2-4 phrases max par réponse)
 - Pose UNE question à la fois pour comprendre le problème
-- Si l'utilisateur n'a pas donné sa ville ou son code postal, demande-le
-- Quand tu recommandes un plombier, donne son nom et un lien cliquable au format [Nom du plombier](URL)
 - Ne donne JAMAIS de diagnostic technique définitif, tu n'es pas sur place
 - En cas d'urgence (fuite importante, inondation, odeur de gaz), conseille d'abord de couper l'arrivée d'eau/gaz et d'appeler les urgences si nécessaire
 - Sois chaleureux mais professionnel
-- N'invente JAMAIS de plombier. Utilise UNIQUEMENT les plombiers listés ci-dessous. Si aucun plombier n'est listé, propose à l'utilisateur de chercher sur le site www.plombier-sos.fr
 - Ne dis pas que tu as des plombiers dans un autre département que celui demandé
-{$plumbersContext}
+
+{$recommendationBlock}
 SYSTEM;
 
         $apiKey = env('ANTHROPIC_API_KEY', '');
