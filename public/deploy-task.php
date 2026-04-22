@@ -25,6 +25,35 @@ if (function_exists('opcache_reset')) {
     }
 }
 
+// Invalidate OPcache per-file for key files (often works when reset is blocked).
+if (function_exists('opcache_invalidate')) {
+    $targets = [
+        __DIR__.'/../app/Http/Controllers/ChatbotController.php',
+        __DIR__.'/../app/Http/Controllers',
+    ];
+    foreach ($targets as $path) {
+        if (is_dir($path)) {
+            foreach (glob($path.'/*.php') ?: [] as $file) {
+                try {
+                    @opcache_invalidate($file, true);
+                } catch (\Throwable $e) {
+                    // Ignore per-file failures.
+                }
+            }
+            $output .= "OPcache invalidated for directory: $path\n";
+        } elseif (is_file($path)) {
+            try {
+                $ok = @opcache_invalidate($path, true);
+                $mtime = date('Y-m-d H:i:s', filemtime($path));
+                $sha = substr(sha1_file($path), 0, 10);
+                $output .= "OPcache invalidate $path: ".($ok ? 'OK' : 'FAILED')." (mtime=$mtime sha=$sha)\n";
+            } catch (\Throwable $e) {
+                $output .= "OPcache invalidate $path: EX ".$e->getMessage()."\n";
+            }
+        }
+    }
+}
+
 Illuminate\Support\Facades\Artisan::call('cache:clear');
 $output .= Illuminate\Support\Facades\Artisan::output();
 Illuminate\Support\Facades\Artisan::call('route:clear');
