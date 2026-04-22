@@ -57,7 +57,7 @@ class ChatbotController extends Controller
                 for ($len = min(4, count($words)); $len >= 1; $len--) {
                     for ($i = count($words) - $len; $i >= 0; $i--) {
                         $candidate = implode(' ', array_slice($words, $i, $len));
-                        if (mb_strlen($candidate) < 3) {
+                        if (mb_strlen($candidate) < 4) {
                             continue;
                         }
                         // First: exact matches only
