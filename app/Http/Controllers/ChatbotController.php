@@ -274,13 +274,13 @@ SYSTEM;
                 ]);
             }
 
-            Log::warning('Chatbot API error: '.$response->body());
+            Log::warning('Chatbot API error: '.$response->status().' '.$response->body());
 
-            return response()->json(['error' => 'Erreur du service, réessayez.'], 500);
+            return response()->json(['error' => 'Erreur API ('.$response->status().'): '.$response->json('error.message', $response->body())], 500);
         } catch (\Exception $e) {
             Log::warning('Chatbot exception: '.$e->getMessage());
 
-            return response()->json(['error' => 'Service temporairement indisponible.'], 503);
+            return response()->json(['error' => 'Exception: '.$e->getMessage()], 503);
         }
     }
 }
