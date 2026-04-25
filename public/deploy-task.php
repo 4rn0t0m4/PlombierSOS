@@ -54,12 +54,17 @@ if (function_exists('opcache_invalidate')) {
     }
 }
 
+Illuminate\Support\Facades\Artisan::call('config:clear');
+$output .= Illuminate\Support\Facades\Artisan::output();
 Illuminate\Support\Facades\Artisan::call('cache:clear');
 $output .= Illuminate\Support\Facades\Artisan::output();
 Illuminate\Support\Facades\Artisan::call('route:clear');
 $output .= Illuminate\Support\Facades\Artisan::output();
 Illuminate\Support\Facades\Artisan::call('view:clear');
 $output .= Illuminate\Support\Facades\Artisan::output();
+
+// Debug: check API key
+$output .= "\nAnthropic key: " . (config('services.anthropic.key') ? 'SET ('.strlen(config('services.anthropic.key')).' chars)' : 'MISSING') . "\n";
 
 if ($action === 'review-summary') {
     Illuminate\Support\Facades\Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 50]);
