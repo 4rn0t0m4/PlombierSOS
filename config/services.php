@@ -39,6 +39,10 @@ return [
         'api_key' => env('GOOGLE_PLACES_API_KEY'),
     ],
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
     'audiotel' => [
         'enabled' => env('AUDIOTEL_ENABLED', false),
         'id_client' => env('AUDIOTEL_ID_CLIENT'),

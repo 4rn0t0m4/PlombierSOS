@@ -228,8 +228,10 @@ Règles générales :
 {$recommendationBlock}
 SYSTEM;
 
-        $apiKey = env('ANTHROPIC_API_KEY', '');
+        $apiKey = config('services.anthropic.key', '');
         if (! $apiKey) {
+            Log::error('Chatbot: ANTHROPIC_API_KEY not found');
+
             return response()->json(['error' => 'Service temporairement indisponible.'], 503);
         }
 

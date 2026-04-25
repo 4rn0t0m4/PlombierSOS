@@ -11,7 +11,7 @@ class SeoContentService
 
     public function __construct()
     {
-        $this->apiKey = env('ANTHROPIC_API_KEY', '');
+        $this->apiKey = config('services.anthropic.key', '');
     }
 
     public function generateForPlumber(array $data): ?string
