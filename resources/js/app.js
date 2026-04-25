@@ -83,6 +83,7 @@ Alpine.data('chatbot', () => ({
     loading: false,
     city: '',
     postalCode: '',
+    sessionId: '',
     started: false,
 
     init() {
@@ -137,6 +138,8 @@ Alpine.data('chatbot', () => ({
                     messages: apiMessages,
                     city: this.city,
                     postal_code: this.postalCode,
+                    session_id: this.sessionId,
+                    page_url: window.location.href,
                 }),
             });
 
@@ -146,7 +149,7 @@ Alpine.data('chatbot', () => ({
                 this.messages.push({ role: 'assistant', content: data.message });
                 if (data.city) this.city = data.city;
                 if (data.postal_code) this.postalCode = data.postal_code;
-                if (data.debug) console.log('Chatbot debug:', data.debug);
+                if (data.session_id) this.sessionId = data.session_id;
             } else {
                 this.messages.push({ role: 'assistant', content: data.error || 'Désolé, une erreur est survenue.' });
             }

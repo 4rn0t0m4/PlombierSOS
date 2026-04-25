@@ -15,6 +15,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.dashboard') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Dashboard</a>
                 <a href="{{ route('admin.plombiers.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.plombiers.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Plombiers</a>
                 <a href="{{ route('admin.avis.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.avis.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Avis</a>
+                <a href="{{ route('admin.chatbot.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('admin.chatbot.*') ? 'bg-blue-800 text-white' : 'hover:bg-blue-800' }}">Chatbot</a>
                 @php
                     $pendingDemandes = \App\Models\ServiceRequest::where('status', 'new')->count();
                     $pendingClaims = \App\Models\ClaimRequest::where('status', 'pending')->count();

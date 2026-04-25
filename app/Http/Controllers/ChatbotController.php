@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatbotConversation;
 use App\Models\City;
 use App\Models\Plumber;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +21,8 @@ class ChatbotController extends Controller
             'messages.*.content' => 'required|string|max:2000',
             'city' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:5',
+            'session_id' => 'nullable|string|max:64',
+            'page_url' => 'nullable|string|max:500',
         ]);
 
         $ip = $request->ip();
@@ -245,11 +248,27 @@ SYSTEM;
             if ($response->ok()) {
                 $text = $response->json('content.0.text');
 
+                // Save conversation
+                $allMessages = array_merge($messages, [['role' => 'assistant', 'content' => $text]]);
+                $sessionId = $request->input('session_id', session()->getId());
+
+                ChatbotConversation::updateOrCreate(
+                    ['session_id' => $sessionId],
+                    [
+                        'ip' => $request->ip(),
+                        'city' => $city,
+                        'postal_code' => $postalCode,
+                        'messages' => $allMessages,
+                        'message_count' => count($allMessages),
+                        'page_url' => $request->input('page_url'),
+                    ]
+                );
+
                 return response()->json([
                     'message' => $text,
                     'city' => $city,
                     'postal_code' => $postalCode,
-                    'debug' => $debugInfo ?? null,
+                    'session_id' => $sessionId,
                 ]);
             }
 

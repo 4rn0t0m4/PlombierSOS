@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AvisController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DemandeController;
+use App\Http\Controllers\Admin\ChatbotController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\PlombierController;
 use App\Http\Controllers\Admin\ReclamationController;
@@ -32,6 +33,11 @@ Route::delete('demandes/{demande}', [DemandeController::class, 'destroy'])->name
 // Messages
 Route::get('messages', [MessageController::class, 'index'])->name('messages.index');
 Route::delete('messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+// Chatbot
+Route::get('chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
+Route::get('chatbot/{conversation}', [ChatbotController::class, 'show'])->name('chatbot.show');
+Route::delete('chatbot/{conversation}', [ChatbotController::class, 'destroy'])->name('chatbot.destroy');
 
 // Réclamations de fiches
 Route::get('reclamations', [ReclamationController::class, 'index'])->name('reclamations.index');
