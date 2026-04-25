@@ -95,6 +95,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'review-summary' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 5]),
         'review-summary-force' => fn () => Artisan::call('seo:generate', ['type' => 'review-summary', '--limit' => 5, '--force' => true]),
         'cache-clear' => function () {
+            Artisan::call('config:clear');
             Artisan::call('cache:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');
