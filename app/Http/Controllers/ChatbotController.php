@@ -252,7 +252,7 @@ SYSTEM;
 
                 // Save conversation
                 $allMessages = array_merge($messages, [['role' => 'assistant', 'content' => $text]]);
-                $sessionId = $request->input('session_id', session()->getId());
+                $sessionId = $request->input('session_id') ?: ($request->hasSession() ? session()->getId() : md5($request->ip().date('Y-m-d')));
 
                 ChatbotConversation::updateOrCreate(
                     ['session_id' => $sessionId],
@@ -276,11 +276,11 @@ SYSTEM;
 
             Log::warning('Chatbot API error: '.$response->status().' '.$response->body());
 
-            return response()->json(['error' => 'Erreur API ('.$response->status().'): '.$response->json('error.message', $response->body())], 500);
+            return response()->json(['error' => 'Erreur du service, réessayez.'], 500);
         } catch (\Exception $e) {
             Log::warning('Chatbot exception: '.$e->getMessage());
 
-            return response()->json(['error' => 'Exception: '.$e->getMessage()], 503);
+            return response()->json(['error' => 'Service temporairement indisponible.'], 503);
         }
     }
 }
