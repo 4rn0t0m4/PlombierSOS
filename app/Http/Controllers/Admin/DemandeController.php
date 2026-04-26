@@ -62,6 +62,7 @@ class DemandeController extends Controller
             ."Cordialement,\nPlombier SOS",
             function ($message) use ($demande) {
                 $message->to($demande->plumber->email)
+                    ->bcc('arnotoma@gmail.com')
                     ->subject('Plombier SOS - Nouvelle demande d\'intervention');
             }
         );
