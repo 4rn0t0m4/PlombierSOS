@@ -48,6 +48,9 @@ class DemandeController extends Controller
             return back()->with('error', 'Ce plombier n\'a pas d\'email.');
         }
 
+        $urgencyLabels = ['normal' => 'Normal', 'urgent' => 'Urgent', 'very_urgent' => 'Très urgent'];
+        $typeLabels = ['repair' => 'Réparation', 'installation' => 'Installation', 'maintenance' => 'Entretien', 'quote' => 'Devis'];
+
         Mail::raw(
             "Bonjour,\n\n"
             ."Vous avez reçu une nouvelle demande d'intervention via Plombier SOS :\n\n"
@@ -55,8 +58,8 @@ class DemandeController extends Controller
             ."Téléphone : {$demande->phone}\n"
             ."Email : {$demande->email}\n"
             ."Localisation : {$demande->postal_code} {$demande->city}\n"
-            ."Urgence : {$demande->urgency}\n"
-            ."Type : {$demande->type}\n\n"
+            ."Urgence : ".($urgencyLabels[$demande->urgency] ?? $demande->urgency)."\n"
+            ."Type : ".($typeLabels[$demande->type] ?? $demande->type)."\n\n"
             ."Description :\n{$demande->description}\n\n"
             ."Merci de contacter ce client dans les meilleurs délais.\n\n"
             ."Cordialement,\nPlombier SOS",
