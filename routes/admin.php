@@ -28,6 +28,7 @@ Route::post('avis/{avis}/moderer', [AvisController::class, 'moderer'])->name('av
 Route::get('demandes', [DemandeController::class, 'index'])->name('demandes.index');
 Route::get('demandes/{demande}', [DemandeController::class, 'show'])->name('demandes.show');
 Route::post('demandes/{demande}/statut', [DemandeController::class, 'updateStatut'])->name('demandes.update-statut');
+Route::post('demandes/{demande}/transfer', [DemandeController::class, 'transfer'])->name('demandes.transfer');
 Route::delete('demandes/{demande}', [DemandeController::class, 'destroy'])->name('demandes.destroy');
 
 // Messages

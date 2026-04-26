@@ -57,6 +57,18 @@
                     <h2 class="font-semibold text-gray-900 mb-4">Plombier associé</h2>
                     <a href="{{ route('admin.plombiers.edit', $demande->plumber) }}" class="text-blue-600 hover:underline text-sm">{{ $demande->plumber->title }}</a>
                     <p class="text-xs text-gray-500 mt-1">{{ $demande->plumber->city }} ({{ $demande->plumber->postal_code }})</p>
+                    @if($demande->plumber->email)
+                        <p class="text-xs text-gray-500 mt-1">{{ $demande->plumber->email }}</p>
+                        <form action="{{ route('admin.demandes.transfer', $demande) }}" method="POST" class="mt-3" onsubmit="return confirm('Envoyer la demande à {{ $demande->plumber->email }} ?')">
+                            @csrf
+                            <button class="w-full bg-green-600 text-white text-sm py-2 rounded hover:bg-green-700 cursor-pointer flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                Transférer par email
+                            </button>
+                        </form>
+                    @else
+                        <p class="text-xs text-orange-500 mt-2">Pas d'email pour ce plombier</p>
+                    @endif
                 </div>
             @endif
 
