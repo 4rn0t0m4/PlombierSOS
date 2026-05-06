@@ -132,6 +132,7 @@
                 <div>
                     <h3 class="font-semibold text-white mb-3">Informations</h3>
                     <ul class="text-sm space-y-1">
+                        <li><a href="{{ route('contact') }}" class="hover:text-white">Contact</a></li>
                         <li><a href="{{ route('mentions-legales') }}" class="hover:text-white">Mentions légales</a></li>
                         <li><a href="{{ route('confidentialite') }}" class="hover:text-white">Confidentialité</a></li>
                     </ul>

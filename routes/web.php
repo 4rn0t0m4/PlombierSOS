@@ -172,6 +172,8 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 // Static pages
 Route::view('/mentions-legales', 'pages.mentions-legales')->name('mentions-legales');
 Route::view('/confidentialite', 'pages.confidentialite')->name('confidentialite');
+Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact');
+Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -208,7 +210,7 @@ Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->
 
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
+$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|contact$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
 Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', $reserved);
