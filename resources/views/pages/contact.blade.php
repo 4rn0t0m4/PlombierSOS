@@ -56,8 +56,5 @@
             </form>
         </div>
 
-        <div class="mt-8 text-sm text-gray-500">
-            <p>Vous pouvez aussi nous écrire à <a href="mailto:contact@plombier-sos.fr" class="text-blue-600 hover:underline">contact@plombier-sos.fr</a></p>
-        </div>
     </div>
 </x-layouts.app>
