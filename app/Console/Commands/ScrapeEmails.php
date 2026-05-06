@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 class ScrapeEmails extends Command
 {
     protected $signature = 'scrape:emails
-        {--limit=20 : Nombre de plombiers à traiter}
+        {--limit=10 : Nombre de plombiers à traiter}
         {--force : Re-scraper même si un email existe déjà}';
 
     protected $description = 'Scrape les sites web des plombiers pour trouver leurs emails';

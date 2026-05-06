@@ -85,7 +85,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
         'migrate' => fn () => Artisan::call('migrate', ['--force' => true]),
         'import-plombiers' => fn () => Artisan::call('import:google-places'),
         'import-reviews' => fn () => Artisan::call('import:google-reviews', ['--limit' => 50]),
-        'scrape-emails' => fn () => Artisan::call('scrape:emails', ['--limit' => 50]),
+        'scrape-emails' => fn () => Artisan::call('scrape:emails', ['--limit' => 10]),
         'seo-plumbers' => fn () => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50]),
         'seo-plumbers-force' => fn () => Artisan::call('seo:generate', ['type' => 'plumber', '--limit' => 50, '--force' => true]),
         'seo-departments' => fn () => Artisan::call('seo:generate', ['type' => 'department', '--limit' => 102]),
