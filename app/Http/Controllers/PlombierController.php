@@ -13,7 +13,11 @@ class PlombierController extends Controller
     {
         $department = Department::where('slug', $deptSlug)->firstOrFail();
         $city = City::where('slug', $villeSlug)->where('department', $department->number)->firstOrFail();
-        $plumber = Plumber::where('slug', $plombierSlug)->active()->firstOrFail();
+        $plumber = Plumber::where('slug', $plombierSlug)->active()->first();
+
+        if (! $plumber) {
+            return redirect()->route('ville.show', [$deptSlug, $villeSlug], 301);
+        }
 
         $plumber->load(['approvedReviews.user', 'schedules', 'administrators']);
 
