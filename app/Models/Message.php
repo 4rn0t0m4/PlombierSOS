@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Message extends Model
 {
-    protected $fillable = ['plumber_id', 'email', 'name', 'phone', 'content'];
+    protected $fillable = ['plumber_id', 'subject', 'email', 'name', 'phone', 'content'];
 
     public function plumber(): BelongsTo
     {

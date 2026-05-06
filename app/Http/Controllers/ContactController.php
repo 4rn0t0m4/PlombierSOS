@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Message;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,13 @@ class ContactController extends Controller
         ];
 
         $subjectLabel = $subjectLabels[$validated['subject']] ?? $validated['subject'];
+
+        Message::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'subject' => $subjectLabel,
+            'content' => $validated['message'],
+        ]);
 
         Mail::raw(
             "Nouveau message de contact :\n\n"

@@ -15,6 +15,9 @@
                         <div class="text-xs text-gray-500 mb-2">
                             {{ $message->email }}
                             @if($message->phone) - {{ $message->phone }} @endif
+                            @if($message->subject)
+                                — <span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{{ $message->subject }}</span>
+                            @endif
                             @if($message->plumber)
                                 — pour <a href="{{ route('admin.plombiers.edit', $message->plumber) }}" class="text-blue-600 hover:underline">{{ $message->plumber->title }}</a>
                             @endif
