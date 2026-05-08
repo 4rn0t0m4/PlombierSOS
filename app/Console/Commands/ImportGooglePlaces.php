@@ -25,8 +25,6 @@ class ImportGooglePlaces extends Command
     private const SEARCH_QUERIES = [
         'plombier',
         'plombier chauffagiste',
-        'dépannage plomberie urgence',
-        'chauffagiste',
     ];
 
     private const ALLOWED_TYPES = [
@@ -78,9 +76,9 @@ class ImportGooglePlaces extends Command
         'electronics_store',
     ];
 
-    private const CITIES_PER_BATCH = 10;
+    private const CITIES_PER_BATCH = 5;
 
-    private const MIN_IMPORTS_PER_RUN = 10;
+    private const MIN_IMPORTS_PER_RUN = 3;
 
     public function handle(): int
     {
