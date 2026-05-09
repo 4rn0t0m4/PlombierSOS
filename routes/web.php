@@ -181,6 +181,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/connexion', [AuthController::class, 'login'])->middleware('throttle:10,1');
     Route::get('/inscription', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/inscription', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::get('/inscription-pro', [AuthController::class, 'showRegisterPro'])->name('register.pro');
+    Route::post('/inscription-pro', [AuthController::class, 'registerPro'])->middleware('throttle:3,1')->name('register.pro.store');
     Route::get('/mot-de-passe-oublie', [AuthController::class, 'showForgotPassword'])->name('password.request');
     Route::post('/mot-de-passe-oublie', [AuthController::class, 'sendResetLink'])->middleware('throttle:3,1')->name('password.email');
     Route::get('/reinitialiser-mot-de-passe/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
@@ -210,7 +212,7 @@ Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->
 
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|contact$|connexion$|inscription$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
+$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|contact$|connexion$|inscription$|inscription-pro$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
 Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', $reserved);

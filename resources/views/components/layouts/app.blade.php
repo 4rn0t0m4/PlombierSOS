@@ -127,6 +127,7 @@
                         <li><a href="{{ route('recherche') }}" class="hover:text-white">Rechercher un plombier</a></li>
                         <li><a href="{{ route('urgence') }}" class="hover:text-white">Urgence plomberie</a></li>
                         <li><a href="{{ route('demande.create') }}" class="hover:text-white">Demander un devis</a></li>
+                        <li><a href="{{ route('register.pro') }}" class="hover:text-white">Inscrire mon entreprise</a></li>
                     </ul>
                 </div>
                 <div>
