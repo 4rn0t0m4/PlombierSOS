@@ -76,9 +76,9 @@ class ImportGooglePlaces extends Command
         'electronics_store',
     ];
 
-    private const CITIES_PER_BATCH = 5;
+    private const CITIES_PER_BATCH = 3;
 
-    private const MIN_IMPORTS_PER_RUN = 3;
+    private const MIN_IMPORTS_PER_RUN = 1;
 
     public function handle(): int
     {
