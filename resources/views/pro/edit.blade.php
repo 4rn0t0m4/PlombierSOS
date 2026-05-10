@@ -111,12 +111,12 @@
                 @if($plumber->photos->isNotEmpty())
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
                         @foreach($plumber->photos as $photo)
-                            <div class="relative group">
-                                <img src="{{ $photo->url }}" alt="{{ $photo->caption }}" class="w-full h-40 object-cover rounded-lg">
-                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition rounded-lg flex items-center justify-center">
-                                    <form action="{{ route('pro.photos.delete', [$plumber, $photo]) }}" method="POST" class="hidden group-hover:block" onsubmit="return confirm('Supprimer cette photo ?')">
+                            <div>
+                                <div class="relative">
+                                    <img src="{{ $photo->url }}" alt="{{ $photo->caption }}" class="w-full h-40 object-cover rounded-lg bg-gray-100">
+                                    <form action="{{ route('pro.photos.delete', [$plumber, $photo]) }}" method="POST" class="absolute top-2 right-2" onsubmit="return confirm('Supprimer cette photo ?')">
                                         @csrf @method('DELETE')
-                                        <button class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-700 cursor-pointer">Supprimer</button>
+                                        <button class="bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700 cursor-pointer shadow">Supprimer</button>
                                     </form>
                                 </div>
                                 @if($photo->caption)
