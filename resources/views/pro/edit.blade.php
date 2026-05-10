@@ -131,7 +131,7 @@
                     <form action="{{ route('pro.photos.upload', $plumber) }}" method="POST" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div x-data="{ files: [] }">
-                            <label class="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition">
+                            <label class="block border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-100 transition">
                                 <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
                                 <p class="text-sm text-gray-600">Cliquez pour ajouter des photos</p>
                                 <p class="text-xs text-gray-400 mt-1">JPG, PNG — 5 Mo max par photo — {{ 10 - $plumber->photos->count() }} restante(s)</p>
