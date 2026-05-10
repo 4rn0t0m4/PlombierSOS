@@ -16,6 +16,6 @@ class PlumberPhoto extends Model
 
     public function getUrlAttribute(): string
     {
-        return url('storage/'.$this->path);
+        return url('media/'.$this->path);
     }
 }

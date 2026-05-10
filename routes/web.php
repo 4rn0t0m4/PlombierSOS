@@ -220,7 +220,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->group(base_path('routes/admin.php'));
 
 // Serve storage files (OVH shared hosting blocks symlinks)
-Route::get('/storage/{path}', function (string $path) {
+Route::get('/media/{path}', function (string $path) {
     $fullPath = storage_path('app/public/'.$path);
 
     if (! file_exists($fullPath)) {
@@ -235,7 +235,7 @@ Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->
 
 // Hierarchical pages: /{department}/{city}/{plumber}
 // These must be last to avoid catching other routes
-$reserved = '^(?!admin$|ajax$|deploy$|pro$|avis$|contact$|connexion$|inscription$|inscription-pro$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
+$reserved = '^(?!admin$|ajax$|deploy$|media$|pro$|avis$|contact$|connexion$|inscription$|inscription-pro$|deconnexion$|recherche$|urgence$|demande$|mentions-legales$|confidentialite$|mot-de-passe-oublie$|reinitialiser-mot-de-passe$|sitemap\.xml$|up$)[^/]+$';
 Route::get('/{deptSlug}', [DepartementController::class, 'show'])->name('departement.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}', [VilleController::class, 'show'])->name('ville.show')->where('deptSlug', $reserved);
 Route::get('/{deptSlug}/{villeSlug}/{plombierSlug}', [PlombierController::class, 'show'])->name('plombier.show')->where('deptSlug', $reserved);
