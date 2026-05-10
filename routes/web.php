@@ -56,6 +56,14 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
             });
             echo "Email envoyé à ".request()->query('to', 'arnaudthomas.np@gmail.com');
         },
+        'debug-photos' => function () {
+            $photos = \App\Models\PlumberPhoto::with('plumber')->latest()->limit(5)->get();
+            foreach ($photos as $p) {
+                echo "#{$p->id} plumber={$p->plumber->title} path={$p->path} url={$p->url}\n";
+                echo "  file exists: ".(file_exists(storage_path('app/public/'.$p->path)) ? 'YES' : 'NO')."\n";
+            }
+            if ($photos->isEmpty()) echo "Aucune photo en base.\n";
+        },
         'debug-claims' => function () {
             $claims = \App\Models\ClaimRequest::with('plumber')->latest()->limit(5)->get();
             foreach ($claims as $c) {
