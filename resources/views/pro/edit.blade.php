@@ -105,7 +105,7 @@
 
             {{-- Photos --}}
             </form>
-            <div class="bg-white border rounded-lg p-6">
+            <div class="bg-white border rounded-lg p-6 mt-8">
                 <h2 class="text-xl font-semibold mb-4">Photos ({{ $plumber->photos->count() }}/10)</h2>
 
                 @if($plumber->photos->isNotEmpty())
