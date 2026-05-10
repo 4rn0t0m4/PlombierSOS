@@ -219,6 +219,17 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->name('admin.')
     ->group(base_path('routes/admin.php'));
 
+// Serve storage files (OVH shared hosting blocks symlinks)
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/'.$path);
+
+    if (! file_exists($fullPath)) {
+        abort(404);
+    }
+
+    return response()->file($fullPath);
+})->where('path', '.*')->name('storage.serve');
+
 // 301 redirects for old URLs with index.html
 Route::get('/{slug}/index.html', fn (string $slug) => redirect("/$slug", 301))->where('slug', '[^/]+');
 
