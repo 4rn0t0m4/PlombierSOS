@@ -103,6 +103,60 @@
                 </div>
             </div>
 
+            {{-- Photos --}}
+            </form>
+            <div class="bg-white border rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">Photos ({{ $plumber->photos->count() }}/10)</h2>
+
+                @if($plumber->photos->isNotEmpty())
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                        @foreach($plumber->photos as $photo)
+                            <div class="relative group">
+                                <img src="{{ $photo->url }}" alt="{{ $photo->caption }}" class="w-full h-40 object-cover rounded-lg">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition rounded-lg flex items-center justify-center">
+                                    <form action="{{ route('pro.photos.delete', [$plumber, $photo]) }}" method="POST" class="hidden group-hover:block" onsubmit="return confirm('Supprimer cette photo ?')">
+                                        @csrf @method('DELETE')
+                                        <button class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-700 cursor-pointer">Supprimer</button>
+                                    </form>
+                                </div>
+                                @if($photo->caption)
+                                    <p class="text-xs text-gray-500 mt-1 truncate">{{ $photo->caption }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if($plumber->photos->count() < 10)
+                    <form action="{{ route('pro.photos.upload', $plumber) }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                        @csrf
+                        <div x-data="{ files: [] }">
+                            <label class="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition">
+                                <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+                                <p class="text-sm text-gray-600">Cliquez pour ajouter des photos</p>
+                                <p class="text-xs text-gray-400 mt-1">JPG, PNG — 5 Mo max par photo — {{ 10 - $plumber->photos->count() }} restante(s)</p>
+                                <input type="file" name="photos[]" multiple accept="image/*" class="hidden" @change="files = Array.from($event.target.files)">
+                            </label>
+                            <template x-if="files.length">
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-600" x-text="files.length + ' fichier(s) sélectionné(s)'"></p>
+                                    <template x-for="f in files" :key="f.name">
+                                        <p class="text-xs text-gray-400" x-text="f.name"></p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        <button type="submit" class="bg-blue-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-blue-800 cursor-pointer">Envoyer les photos</button>
+                    </form>
+                @else
+                    <p class="text-sm text-gray-500">Nombre maximum de photos atteint (10).</p>
+                @endif
+            </div>
+
+            <form action="{{ route('pro.update', $plumber) }}" method="POST">
+            @csrf
+            @method('PUT')
+
             {{-- Horaires --}}
             <div class="bg-white border rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-4">Horaires d'ouverture</h2>

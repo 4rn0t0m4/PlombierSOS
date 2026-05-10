@@ -100,6 +100,7 @@ Route::get('/deploy/{action}/{token}', function (string $action, string $token) 
             Artisan::call('route:clear');
             Artisan::call('view:clear');
         },
+        'storage-link' => fn () => Artisan::call('storage:link'),
         'create-admin' => fn () => Artisan::call('make:admin'),
     ];
 
@@ -199,6 +200,9 @@ Route::middleware(['auth', \App\Http\Middleware\ProMiddleware::class])
         Route::get('/', [\App\Http\Controllers\ProController::class, 'dashboard'])->name('dashboard');
         Route::get('/{plumber}/edit', [\App\Http\Controllers\ProController::class, 'edit'])->name('edit');
         Route::put('/{plumber}', [\App\Http\Controllers\ProController::class, 'update'])->name('update');
+        Route::post('/{plumber}/photos', [\App\Http\Controllers\ProController::class, 'uploadPhoto'])->name('photos.upload');
+        Route::delete('/{plumber}/photos/{photo}', [\App\Http\Controllers\ProController::class, 'deletePhoto'])->name('photos.delete');
+        Route::put('/{plumber}/photos/{photo}', [\App\Http\Controllers\ProController::class, 'updatePhotoCaption'])->name('photos.caption');
     });
 
 // Admin (must be before catch-all routes)

@@ -19,7 +19,7 @@ class PlombierController extends Controller
             return redirect()->route('ville.show', [$deptSlug, $villeSlug], 301);
         }
 
-        $plumber->load(['approvedReviews.user', 'schedules', 'administrators']);
+        $plumber->load(['approvedReviews.user', 'schedules', 'administrators', 'photos']);
 
         $totalInCity = Plumber::active()->where('city_id', $city->id)->count();
 

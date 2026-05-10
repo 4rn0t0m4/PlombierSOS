@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\OpeningHour;
 use App\Models\Plumber;
+use App\Models\PlumberPhoto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProController extends Controller
 {
@@ -19,7 +21,7 @@ class ProController extends Controller
     {
         $this->authorize($plumber);
 
-        $plumber->load('schedules');
+        $plumber->load('schedules', 'photos');
 
         return view('pro.edit', compact('plumber'));
     }
@@ -75,6 +77,56 @@ class ProController extends Controller
         }
 
         return redirect()->route('pro.edit', $plumber)->with('success', 'Informations mises à jour.');
+    }
+
+    public function uploadPhoto(Request $request, Plumber $plumber)
+    {
+        $this->authorize($plumber);
+
+        $request->validate([
+            'photos' => 'required|array|max:5',
+            'photos.*' => 'image|max:5120', // 5MB max par image
+        ]);
+
+        $maxOrder = $plumber->photos()->max('sort_order') ?? 0;
+
+        foreach ($request->file('photos') as $file) {
+            $path = $file->store('plumbers/'.$plumber->id, 'public');
+            $plumber->photos()->create([
+                'path' => $path,
+                'sort_order' => ++$maxOrder,
+            ]);
+        }
+
+        return back()->with('success', count($request->file('photos')).' photo(s) ajoutée(s).');
+    }
+
+    public function deletePhoto(Plumber $plumber, PlumberPhoto $photo)
+    {
+        $this->authorize($plumber);
+
+        if ($photo->plumber_id !== $plumber->id) {
+            abort(403);
+        }
+
+        Storage::disk('public')->delete($photo->path);
+        $photo->delete();
+
+        return back()->with('success', 'Photo supprimée.');
+    }
+
+    public function updatePhotoCaption(Request $request, Plumber $plumber, PlumberPhoto $photo)
+    {
+        $this->authorize($plumber);
+
+        if ($photo->plumber_id !== $plumber->id) {
+            abort(403);
+        }
+
+        $request->validate(['caption' => 'nullable|string|max:255']);
+        $photo->update(['caption' => $request->input('caption')]);
+
+        return back()->with('success', 'Légende mise à jour.');
     }
 
     private function authorize(Plumber $plumber): void

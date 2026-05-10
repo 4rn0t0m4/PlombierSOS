@@ -200,4 +200,9 @@ class Plumber extends Model
     {
         return $this->hasMany(ServiceRequest::class);
     }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PlumberPhoto::class)->orderBy('sort_order');
+    }
 }

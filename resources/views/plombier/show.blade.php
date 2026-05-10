@@ -130,6 +130,20 @@
                     </div>
                 </div>
 
+                {{-- Photos --}}
+                @if($plumber->photos->isNotEmpty())
+                    <div class="mt-8">
+                        <h2 class="text-xl font-semibold mb-3">Photos</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            @foreach($plumber->photos as $photo)
+                                <a href="{{ $photo->url }}" target="_blank">
+                                    <img src="{{ $photo->url }}" alt="{{ $photo->caption ?? $plumber->title }}" class="w-full h-40 object-cover rounded-lg hover:opacity-90 transition">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Réclamation de fiche --}}
                 <div class="mt-6" x-data="{ showClaim: false, claimSent: false, claimSending: false, claimError: '' }">
                     <button @click="showClaim = !showClaim" class="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer">
