@@ -56,6 +56,23 @@ class ChatbotController extends Controller
                 $words = preg_split('/[\s,.!?]+/', $normalizedText);
                 $words = array_values(array_filter($words, fn ($w) => mb_strlen($w) >= 2));
 
+                // Common French words that should never trigger a city match.
+                // Without this, prepositions like "sous" wrongly match "Sous-Parsat" via prefix.
+                $stopwords = [
+                    'sous', 'sans', 'dans', 'avec', 'dont', 'hors', 'vers', 'sauf', 'chez', 'pour',
+                    'mais', 'donc', 'alors', 'aussi', 'plus', 'moins', 'bien', 'mieux', 'encore',
+                    'avant', 'apres', 'comme', 'ainsi', 'meme', 'juste', 'tres', 'trop',
+                    'nous', 'vous', 'elles', 'leur', 'leurs', 'mien', 'tien', 'sien',
+                    'avoir', 'etre', 'fait', 'dire', 'aller', 'venir', 'faire',
+                    'peut', 'doit', 'faut', 'vais', 'vient', 'donne', 'prend', 'mettre', 'etait', 'etais', 'sera',
+                    'fuite', 'evier', 'robinet', 'tuyau', 'tuyaux', 'joint', 'siphon', 'conduit',
+                    'urgence', 'urgent', 'active', 'goutte', 'gouttes', 'arret', 'maison',
+                    'cuisine', 'salle', 'bain', 'douche', 'toilettes', 'chauffe', 'chaudiere',
+                    'plomberie', 'plombier', 'depannage', 'devis',
+                    'bonjour', 'merci', 'voici', 'voila', 'oui', 'non', 'vraiment',
+                ];
+                $words = array_values(array_filter($words, fn ($w) => ! in_array($w, $stopwords, true)));
+
                 // Try multi-word combinations first (longest match wins), then single words
                 for ($len = min(4, count($words)); $len >= 1; $len--) {
                     for ($i = count($words) - $len; $i >= 0; $i--) {
