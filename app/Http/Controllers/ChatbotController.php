@@ -250,27 +250,48 @@ SYSTEM;
             if ($response->ok()) {
                 $text = $response->json('content.0.text');
 
+                // Server-side guard: if no plumbers were provided but the model still mentioned a
+                // department/city, override the response. This protects against LLM hallucination
+                // even if the system prompt is somehow ignored.
+                $guardTriggered = false;
+                if (! $hasPlumbers && $text) {
+                    $forbiddenPatterns = '/(creuse|guéret|gueret|bonnat|budelière|budeliere|en\s+(?:[a-zà-ü]+\s+){0,3}département)/i';
+                    if (preg_match($forbiddenPatterns, $text)) {
+                        $text = "Pour pouvoir vous recommander un plombier disponible dans votre secteur, j'ai d'abord besoin de savoir où vous vous trouvez. Pouvez-vous me donner votre ville ou votre code postal ?";
+                        $guardTriggered = true;
+                    }
+                }
+
                 // Save conversation
                 $allMessages = array_merge($messages, [['role' => 'assistant', 'content' => $text]]);
                 $sessionId = $request->input('session_id') ?: ($request->hasSession() ? session()->getId() : md5($request->ip().date('Y-m-d')));
 
-                ChatbotConversation::updateOrCreate(
-                    ['session_id' => $sessionId],
-                    [
-                        'ip' => $request->ip(),
-                        'city' => $city,
-                        'postal_code' => $postalCode,
-                        'messages' => $allMessages,
-                        'message_count' => count($allMessages),
-                        'page_url' => $request->input('page_url'),
-                    ]
-                );
+                try {
+                    ChatbotConversation::updateOrCreate(
+                        ['session_id' => $sessionId],
+                        [
+                            'ip' => $request->ip(),
+                            'city' => $city,
+                            'postal_code' => $postalCode,
+                            'messages' => $allMessages,
+                            'message_count' => count($allMessages),
+                            'page_url' => $request->input('page_url'),
+                        ]
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('Chatbot conversation save failed: '.$e->getMessage());
+                }
 
                 return response()->json([
                     'message' => $text,
                     'city' => $city,
                     'postal_code' => $postalCode,
                     'session_id' => $sessionId,
+                    'debug' => [
+                        'has_plumbers' => $hasPlumbers,
+                        'prompt_sha' => substr(sha1($system), 0, 8),
+                        'guard_triggered' => $guardTriggered,
+                    ],
                 ]);
             }
 
